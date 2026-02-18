@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>Auto Login</title></head>
+<body>
+<script>
+async function login() {
+  // Get CSRF token
+  const csrfRes = await fetch('/api/auth/csrf');
+  const { csrfToken } = await csrfRes.json();
+
+  // Sign in
+  const res = await fetch('/api/auth/callback/credentials', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      csrfToken,
+      email: 'joao@tiffy.com',
+      password: '123456',
+      json: 'true'
+    }),
+    redirect: 'follow'
+  });
+
+  // Redirect to feed
+  window.location.href = '/feed';
+}
+login();
+</script>
+<p>Fazendo login...</p>
+</body>
+</html>

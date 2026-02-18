@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id          String    @id @default(cuid())
+  name        String
+  username    String    @unique
+  email       String    @unique
+  password    String
+  bio         String?
+  avatar      String?
+  gender      String    @default("MALE")
+  role        String    @default("USER")
+  coins       Int       @default(100)
+  online      Boolean   @default(false)
+  verified    Boolean   @default(false)
+  loginStreak Int       @default(0)
+  lastRewardAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  videos         Video[]
+  likes          Like[]
+  comments       Comment[]
+  sentMessages   Message[]       @relation("SentMessages")
+  recvMessages   Message[]       @relation("ReceivedMessages")
+  sentGifts      Gift[]          @relation("SentGifts")
+  recvGifts      Gift[]          @relation("ReceivedGifts")
+  transactions   Transaction[]
+  followers      Follow[]        @relation("UserFollowers")
+  following      Follow[]        @relation("UserFollowing")
+  notifications  Notification[]
+  gallery        GalleryItem[]
+  galleryUnlocks GalleryUnlock[]
+  dailyRewards   DailyReward[]
+
+  @@index([username])
+  @@index([email])
+}
+
+model Video {
+  id        String   @id @default(cuid())
+  url       String
+  thumbnail String?
+  caption   String?
+  duration  Int      @default(15)
+  views     Int      @default(0)
+  userId    String
+  createdAt DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes    Like[]
+  comments Comment[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  type       String   @default("text")
+  senderId   String
+  receiverId String
+  cost       Int      @default(0)
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
+model Like {
+  id      String @id @default(cuid())
+  userId  String
+  videoId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, videoId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  videoId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId])
+  @@index([createdAt])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  fromId    String?
+  fromName  String?
+  refId     String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model GalleryItem {
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  type      String   @default("PHOTO")
+  price     Int      @default(10)
+  caption   String?
+  createdAt DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unlocks GalleryUnlock[]
+
+  @@index([userId])
+}
+
+model GalleryUnlock {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  createdAt DateTime @default(now())
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item GalleryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
+}
+
+model DailyReward {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  streak    Int      @default(1)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Gift {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  type       String
+  value      Int
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentGifts", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedGifts", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  amount      Int
+  description String
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
