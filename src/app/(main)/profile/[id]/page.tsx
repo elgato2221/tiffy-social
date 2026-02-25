@@ -335,7 +335,7 @@ export default function UserProfilePage() {
               <div key={item.id} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
                 {item.unlocked && item.url ? (
                   item.type === "VIDEO" ? (
-                    <video src={`${item.url}#t=0.1`} className="w-full h-full object-cover" muted playsInline preload="auto" />
+                    <video src={`${item.url}#t=0.1`} className="w-full h-full object-cover" muted playsInline preload="auto" crossOrigin="anonymous" />
                   ) : (
                     <img src={item.url} alt={item.caption || ""} loading="lazy" className="w-full h-full object-cover" />
                   )
@@ -393,8 +393,17 @@ export default function UserProfilePage() {
                   muted
                   playsInline
                   preload="metadata"
+                  crossOrigin="anonymous"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
+                {/* Play icon overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center backdrop-blur-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                    </svg>
+                  </div>
+                </div>
                 <div className="absolute bottom-1 left-1 flex items-center gap-1">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white drop-shadow" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
@@ -424,7 +433,9 @@ export default function UserProfilePage() {
                 src={selectedVideo.url}
                 controls
                 autoPlay
+                muted
                 playsInline
+                crossOrigin="anonymous"
                 className="w-full max-h-[70vh] object-contain bg-black"
               />
               <div className="p-4">

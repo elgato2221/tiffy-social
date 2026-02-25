@@ -268,6 +268,7 @@ export default function MyGalleryPage() {
                         muted
                         playsInline
                         preload="auto"
+                        crossOrigin="anonymous"
                       />
                     ) : (
                       <img

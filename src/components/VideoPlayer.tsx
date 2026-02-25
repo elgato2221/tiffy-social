@@ -21,7 +21,7 @@ export default function VideoPlayer({ src, poster }: VideoPlayerProps) {
   const togglePlay = () => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
-      videoRef.current.play();
+      videoRef.current.play().catch(() => {});
       setIsPlaying(true);
     } else {
       videoRef.current.pause();
@@ -34,6 +34,15 @@ export default function VideoPlayer({ src, poster }: VideoPlayerProps) {
     if (!videoRef.current) return;
     videoRef.current.muted = !videoRef.current.muted;
     setIsMuted(videoRef.current.muted);
+  };
+
+  // Handle autoplay failure (mobile browsers may block it)
+  const handleCanPlay = () => {
+    if (videoRef.current && videoRef.current.paused) {
+      videoRef.current.play().catch(() => {
+        setIsPlaying(false);
+      });
+    }
   };
 
   if (!src) {
@@ -69,6 +78,10 @@ export default function VideoPlayer({ src, poster }: VideoPlayerProps) {
         muted
         loop
         playsInline
+        crossOrigin="anonymous"
+        onCanPlay={handleCanPlay}
+        onPlaying={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
         className="absolute inset-0 h-full w-full object-cover"
       />
 
