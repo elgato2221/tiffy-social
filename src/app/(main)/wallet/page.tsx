@@ -56,7 +56,7 @@ function getTransactionIcon(type: string): string {
     case "WITHDRAWAL":
       return "💸";
     case "DAILY_REWARD":
-      return "🎯";
+      return "🎯"; // legacy
     case "GALLERY_UNLOCK":
       return "🔓";
     case "GALLERY_EARNING":

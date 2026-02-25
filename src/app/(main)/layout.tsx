@@ -1,7 +1,6 @@
 import Navbar from "@/components/Navbar";
 import LeftSidebar from "@/components/LeftSidebar";
 import RightSidebar from "@/components/RightSidebar";
-import DailyRewardModal from "@/components/DailyRewardModal";
 
 export default function MainLayout({
   children,
@@ -25,9 +24,6 @@ export default function MainLayout({
       <div className="lg:hidden">
         <Navbar />
       </div>
-
-      {/* Daily Reward Modal */}
-      <DailyRewardModal />
     </div>
   );
 }
