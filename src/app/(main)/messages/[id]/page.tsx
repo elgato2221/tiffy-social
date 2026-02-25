@@ -490,9 +490,9 @@ export default function ChatPage() {
   const otherInitial = otherUser?.name?.charAt(0)?.toUpperCase() || "?";
 
   return (
-    <div className="bg-black h-screen flex flex-col overflow-x-hidden w-full max-w-full">
+    <div className="bg-black h-[100dvh] flex flex-col overflow-hidden w-full max-w-full">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex items-center gap-3">
+      <div className="flex-shrink-0 z-30 bg-black border-b border-gray-800 px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => router.push("/messages")}
           className="text-gray-400 hover:text-white transition"
@@ -623,7 +623,7 @@ export default function ChatPage() {
       )}
 
       {/* Input Bar */}
-      <div className="flex-shrink-0 bg-black border-t border-gray-800 px-3 py-2 pb-20 lg:pb-3 w-full min-w-0">
+      <div className="flex-shrink-0 bg-black border-t border-gray-800 px-3 py-2 pb-[env(safe-area-inset-bottom)] w-full min-w-0">
         <div className="w-full max-w-lg mx-auto min-w-0">
           {/* Cost indicator */}
           {messageCost > 0 && !recording && !audioBlob && !showMediaPicker && (
