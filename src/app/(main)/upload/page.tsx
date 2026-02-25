@@ -17,6 +17,8 @@ export default function UploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [verified, setVerified] = useState<boolean | null>(null);
+  const [destination, setDestination] = useState<"FEED" | "PROFILE">("FEED");
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -126,7 +128,7 @@ export default function UploadPage() {
       const res = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, caption }),
+        body: JSON.stringify({ url, caption, destination }),
       });
 
       if (!res.ok) {
@@ -136,9 +138,13 @@ export default function UploadPage() {
 
       setProgress(100);
 
-      setTimeout(() => {
-        router.push("/feed");
-      }, 500);
+      if (destination === "FEED") {
+        setUploadSuccess(true);
+      } else {
+        setTimeout(() => {
+          router.push("/profile");
+        }, 500);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao fazer upload");
       setUploading(false);
@@ -150,6 +156,51 @@ export default function UploadPage() {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
+
+  // Upload success for feed posts (pending review)
+  if (uploadSuccess) {
+    return (
+      <div className="min-h-screen bg-black pb-24">
+        <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-gray-800">
+          <div className="mx-auto max-w-lg px-4 py-4">
+            <h1 className="text-center text-lg font-bold text-white">Novo Video</h1>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-24 px-6">
+          <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-bold text-white">Video enviado!</h2>
+          <p className="text-gray-400 text-sm mt-2 text-center max-w-xs">
+            Seu video foi enviado para analise. Ele aparecera no feed apos aprovacao.
+          </p>
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => {
+                setUploadSuccess(false);
+                setFile(null);
+                setPreview(null);
+                setCaption("");
+                setProgress(0);
+                setUploading(false);
+              }}
+              className="px-6 py-2.5 bg-gray-800 text-white font-semibold rounded-xl transition hover:bg-gray-700"
+            >
+              Postar outro
+            </button>
+            <Link
+              href="/profile"
+              className="px-6 py-2.5 bg-gradient-to-r from-purple-400 to-purple-600 text-white font-semibold rounded-xl shadow-md transition hover:scale-105"
+            >
+              Meu perfil
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Not verified - show block
   if (verified === false) {
@@ -319,6 +370,49 @@ export default function UploadPage() {
               <p className="mt-1 text-right text-xs text-gray-500">
                 {caption.length}/300
               </p>
+            </div>
+
+            {/* Destination selector */}
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                Onde publicar
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDestination("FEED")}
+                  disabled={uploading}
+                  className={`flex-1 py-3 rounded-xl text-sm font-semibold transition border ${
+                    destination === "FEED"
+                      ? "bg-purple-500/20 border-purple-500 text-purple-400"
+                      : "bg-gray-900 border-gray-700 text-gray-400 hover:border-gray-600"
+                  } disabled:opacity-50`}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Feed</span>
+                    <span className="text-[10px] text-gray-500 font-normal">
+                      Precisa aprovacao
+                    </span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDestination("PROFILE")}
+                  disabled={uploading}
+                  className={`flex-1 py-3 rounded-xl text-sm font-semibold transition border ${
+                    destination === "PROFILE"
+                      ? "bg-purple-500/20 border-purple-500 text-purple-400"
+                      : "bg-gray-900 border-gray-700 text-gray-400 hover:border-gray-600"
+                  } disabled:opacity-50`}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Meu Perfil</span>
+                    <span className="text-[10px] text-gray-500 font-normal">
+                      Visivel imediatamente
+                    </span>
+                  </div>
+                </button>
+              </div>
             </div>
 
             {/* Progress bar */}

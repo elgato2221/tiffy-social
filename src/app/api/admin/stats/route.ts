@@ -21,6 +21,9 @@ export async function GET() {
       totalMessages,
       bannedUsers,
       recentUsers,
+      pendingFeedVideos,
+      totalDeposits,
+      totalDepositCoins,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.video.count(),
@@ -38,6 +41,12 @@ export async function GET() {
           },
         },
       }),
+      prisma.video.count({ where: { destination: "FEED", status: "PENDING" } }),
+      prisma.transaction.count({ where: { type: "PURCHASE" } }),
+      prisma.transaction.aggregate({
+        where: { type: "PURCHASE" },
+        _sum: { amount: true },
+      }),
     ]);
 
     return NextResponse.json({
@@ -51,6 +60,9 @@ export async function GET() {
       totalMessages,
       bannedUsers,
       recentUsers,
+      pendingFeedVideos,
+      totalDeposits,
+      totalDepositCoins: totalDepositCoins._sum.amount || 0,
     });
   } catch (error) {
     console.error("Admin stats error:", error);

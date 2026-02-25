@@ -37,6 +37,7 @@ export const createVideoSchema = z.object({
   url: z.string().min(1),
   caption: z.string().max(500).optional(),
   duration: z.number().int().min(1).max(300).optional(),
+  destination: z.enum(["PROFILE", "FEED"]).default("FEED"),
 });
 
 // Comment create
@@ -134,6 +135,13 @@ export const adminReportActionSchema = z.object({
 // Admin withdrawal action
 export const adminWithdrawalActionSchema = z.object({
   withdrawalId: z.string().min(1),
+  action: z.enum(["APPROVE", "REJECT"]),
+  reason: z.string().max(500).optional(),
+});
+
+// Admin feed moderation action
+export const adminFeedActionSchema = z.object({
+  videoId: z.string().min(1),
   action: z.enum(["APPROVE", "REJECT"]),
   reason: z.string().max(500).optional(),
 });

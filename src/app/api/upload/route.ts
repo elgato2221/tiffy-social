@@ -33,12 +33,18 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validation = validateBody(createVideoSchema, body);
     if (!validation.success) return validation.response;
-    const { url, caption } = validation.data;
+    const { url, caption, destination } = validation.data;
+
+    // Profile posts are immediately approved
+    // Feed posts go to PENDING for admin review
+    const status = destination === "PROFILE" ? "APPROVED" : "PENDING";
 
     const video = await prisma.video.create({
       data: {
         url,
         caption: caption || null,
+        destination,
+        status,
         userId,
       },
       include: {

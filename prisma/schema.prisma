@@ -61,14 +61,19 @@ model User {
 }
 
 model Video {
-  id        String   @id @default(cuid())
-  url       String
-  thumbnail String?
-  caption   String?
-  duration  Int      @default(15)
-  views     Int      @default(0)
-  userId    String
-  createdAt DateTime @default(now())
+  id           String    @id @default(cuid())
+  url          String
+  thumbnail    String?
+  caption      String?
+  duration     Int       @default(15)
+  views        Int       @default(0)
+  destination  String    @default("FEED")      // PROFILE or FEED
+  status       String    @default("APPROVED")   // PENDING, APPROVED, REJECTED
+  rejectReason String?
+  reviewedAt   DateTime?
+  reviewedBy   String?
+  userId       String
+  createdAt    DateTime  @default(now())
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes    Like[]
@@ -77,6 +82,8 @@ model Video {
 
   @@index([userId])
   @@index([createdAt])
+  @@index([status])
+  @@index([destination])
 }
 
 model Message {

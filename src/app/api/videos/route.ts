@@ -10,7 +10,12 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const skip = (page - 1) * limit;
 
-    const where = { user: { verified: true } };
+    // Only show approved feed videos from verified users
+    const where = {
+      user: { verified: true },
+      destination: "FEED",
+      status: "APPROVED",
+    };
 
     const [videos, total] = await Promise.all([
       prisma.video.findMany({
@@ -74,7 +79,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Apenas perfis verificados podem publicar." }, { status: 403 });
     }
 
-    const { url, caption, duration } = await req.json();
+    const { url, caption, duration, destination } = await req.json();
 
     if (!url) {
       return NextResponse.json(
@@ -83,11 +88,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const videoDestination = destination === "PROFILE" ? "PROFILE" : "FEED";
+    const videoStatus = videoDestination === "PROFILE" ? "APPROVED" : "PENDING";
+
     const video = await prisma.video.create({
       data: {
         url,
         caption: caption || null,
         duration: duration || 15,
+        destination: videoDestination,
+        status: videoStatus,
         userId,
       },
       include: {

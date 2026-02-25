@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { timeAgo } from "@/lib/utils";
 
-type Tab = "dashboard" | "users" | "reports" | "withdrawals" | "verifications";
+type Tab = "dashboard" | "users" | "feed" | "reports" | "withdrawals" | "deposits" | "verifications";
 
 interface Stats {
   totalUsers: number;
@@ -18,6 +18,9 @@ interface Stats {
   totalMessages: number;
   bannedUsers: number;
   recentUsers: number;
+  pendingFeedVideos: number;
+  totalDeposits: number;
+  totalDepositCoins: number;
 }
 
 interface AdminUser {
@@ -65,6 +68,25 @@ interface VerificationItem {
   user: { id: string; name: string; username: string; avatar: string | null; verified: boolean };
 }
 
+interface FeedVideoItem {
+  id: string;
+  url: string;
+  caption: string | null;
+  status: string;
+  rejectReason: string | null;
+  createdAt: string;
+  user: { id: string; name: string; username: string; avatar: string | null; verified: boolean };
+  _count: { likes: number; comments: number };
+}
+
+interface DepositItem {
+  id: string;
+  amount: number;
+  description: string;
+  createdAt: string;
+  user: { id: string; name: string; username: string; avatar: string | null; email: string };
+}
+
 export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -100,6 +122,18 @@ export default function AdminPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [fullscreenImg, setFullscreenImg] = useState<string | null>(null);
 
+  // Feed moderation
+  const [feedVideos, setFeedVideos] = useState<FeedVideoItem[]>([]);
+  const [feedFilter, setFeedFilter] = useState("PENDING");
+  const [processingFeedVideo, setProcessingFeedVideo] = useState<string | null>(null);
+  const [feedRejectId, setFeedRejectId] = useState<string | null>(null);
+  const [feedRejectReason, setFeedRejectReason] = useState("");
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
+
+  // Deposits
+  const [deposits, setDeposits] = useState<DepositItem[]>([]);
+  const [depositsStats, setDepositsStats] = useState<{ totalDeposits: number; totalCoins: number } | null>(null);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -119,6 +153,8 @@ export default function AdminPage() {
     else if (tab === "reports") fetchReports();
     else if (tab === "withdrawals") fetchWithdrawals();
     else if (tab === "verifications") fetchVerifications();
+    else if (tab === "feed") fetchFeedVideos();
+    else if (tab === "deposits") fetchDeposits();
   }, [tab, status, session]);
 
   async function fetchStats() {
@@ -174,6 +210,55 @@ export default function AdminPage() {
       if (res.ok) setVerifications(await res.json());
     } catch {
       console.error("Erro ao carregar verificacoes");
+    }
+  }
+
+  async function fetchFeedVideos() {
+    try {
+      const res = await fetch(`/api/admin/feed?status=${feedFilter}`);
+      if (res.ok) setFeedVideos(await res.json());
+    } catch {
+      console.error("Erro ao carregar videos do feed");
+    }
+  }
+
+  async function fetchDeposits() {
+    try {
+      const res = await fetch("/api/admin/deposits");
+      if (res.ok) {
+        const data = await res.json();
+        setDeposits(data.deposits);
+        setDepositsStats(data.stats);
+      }
+    } catch {
+      console.error("Erro ao carregar depositos");
+    }
+  }
+
+  async function handleFeedVideoAction(videoId: string, action: "APPROVE" | "REJECT", reason?: string) {
+    setProcessingFeedVideo(videoId);
+    try {
+      const res = await fetch("/api/admin/feed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId, action, reason }),
+      });
+      if (res.ok) {
+        setFeedVideos((prev) =>
+          prev.map((v) =>
+            v.id === videoId
+              ? { ...v, status: action === "APPROVE" ? "APPROVED" : "REJECTED", rejectReason: reason || null }
+              : v
+          )
+        );
+        setFeedRejectId(null);
+        setFeedRejectReason("");
+        fetchStats();
+      }
+    } catch {
+      alert("Erro ao processar video.");
+    } finally {
+      setProcessingFeedVideo(null);
     }
   }
 
@@ -291,8 +376,10 @@ export default function AdminPage() {
   const tabs: { key: Tab; label: string; badge?: number }[] = [
     { key: "dashboard", label: "Dashboard" },
     { key: "users", label: "Usuarios" },
+    { key: "feed", label: "Feed", badge: stats?.pendingFeedVideos },
     { key: "reports", label: "Denuncias", badge: stats?.pendingReports },
     { key: "withdrawals", label: "Saques", badge: stats?.pendingWithdrawals },
+    { key: "deposits", label: "Depositos" },
     { key: "verifications", label: "Verificacoes", badge: stats?.pendingVerifications },
   ];
 
@@ -362,6 +449,27 @@ export default function AdminPage() {
             onAction={handleWithdrawalAction}
           />
         )}
+        {tab === "feed" && (
+          <FeedTab
+            videos={feedVideos}
+            filter={feedFilter}
+            setFilter={(f: string) => setFeedFilter(f)}
+            onRefresh={fetchFeedVideos}
+            processing={processingFeedVideo}
+            rejectId={feedRejectId}
+            setRejectId={setFeedRejectId}
+            rejectReason={feedRejectReason}
+            setRejectReason={setFeedRejectReason}
+            onAction={handleFeedVideoAction}
+            setPreviewVideoUrl={setPreviewVideoUrl}
+          />
+        )}
+        {tab === "deposits" && (
+          <DepositsTab
+            deposits={deposits}
+            stats={depositsStats}
+          />
+        )}
         {tab === "verifications" && (
           <VerificationsTab
             verifications={verifications}
@@ -379,12 +487,30 @@ export default function AdminPage() {
       {/* Fullscreen Image */}
       {fullscreenImg && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onClick={() => setFullscreenImg(null)}>
-          <button onClick={() => setFullscreenImg(null)} className="absolute top-4 right-4 text-white">
+          <button onClick={() => setFullscreenImg(null)} className="absolute top-4 right-4 text-white z-50">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
           <img src={fullscreenImg} alt="Preview" className="max-w-full max-h-full object-contain" />
+        </div>
+      )}
+
+      {/* Video Preview Modal */}
+      {previewVideoUrl && (
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center" onClick={() => setPreviewVideoUrl(null)}>
+          <button onClick={() => setPreviewVideoUrl(null)} className="absolute top-4 right-4 text-white z-50">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <video
+            src={previewVideoUrl}
+            controls
+            autoPlay
+            className="max-w-sm max-h-[80vh] rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>
@@ -401,10 +527,13 @@ function DashboardTab({ stats }: { stats: Stats | null }) {
     { label: "Novos (7 dias)", value: stats.recentUsers, color: "text-purple-400", bg: "bg-purple-500/10", icon: "✨" },
     { label: "Banidos", value: stats.bannedUsers, color: "text-red-400", bg: "bg-red-500/10", icon: "🚫" },
     { label: "Total Videos", value: stats.totalVideos, color: "text-purple-400", bg: "bg-purple-500/10", icon: "🎬" },
+    { label: "Feed Pendentes", value: stats.pendingFeedVideos, color: "text-yellow-400", bg: "bg-yellow-500/10", icon: "🕐" },
     { label: "Total Mensagens", value: stats.totalMessages, color: "text-purple-400", bg: "bg-purple-500/10", icon: "💬" },
     { label: "Denuncias Pendentes", value: stats.pendingReports, color: "text-purple-400", bg: "bg-purple-500/10", icon: "⚠️" },
     { label: "Saques Pendentes", value: stats.pendingWithdrawals, color: "text-purple-400", bg: "bg-purple-500/10", icon: "💸" },
     { label: "Verificacoes Pendentes", value: stats.pendingVerifications, color: "text-purple-400", bg: "bg-purple-500/10", icon: "📋" },
+    { label: "Total Depositos", value: stats.totalDeposits, color: "text-green-400", bg: "bg-green-500/10", icon: "💰" },
+    { label: "Receita (moedas)", value: stats.totalDepositCoins, color: "text-green-400", bg: "bg-green-500/10", icon: "🪙" },
   ];
 
   return (
@@ -966,6 +1095,227 @@ function VerificationsTab({
                   Motivo: {req.reason}
                 </div>
               )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Feed Tab ─────────────────────────────────────────────────
+
+function FeedTab({
+  videos, filter, setFilter, onRefresh, processing, rejectId, setRejectId,
+  rejectReason, setRejectReason, onAction, setPreviewVideoUrl,
+}: {
+  videos: FeedVideoItem[];
+  filter: string;
+  setFilter: (f: string) => void;
+  onRefresh: () => void;
+  processing: string | null;
+  rejectId: string | null;
+  setRejectId: (id: string | null) => void;
+  rejectReason: string;
+  setRejectReason: (r: string) => void;
+  onAction: (videoId: string, action: "APPROVE" | "REJECT", reason?: string) => void;
+  setPreviewVideoUrl: (url: string | null) => void;
+}) {
+  useEffect(() => { onRefresh(); }, [filter]);
+
+  const filters = [
+    { key: "PENDING", label: "Pendentes" },
+    { key: "all", label: "Todos" },
+    { key: "APPROVED", label: "Aprovados" },
+    { key: "REJECTED", label: "Rejeitados" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+        {filters.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-xl transition ${
+              filter === f.key ? "bg-purple-500 text-white" : "bg-gray-900 text-gray-400"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {videos.length === 0 ? (
+        <p className="text-center text-gray-500 text-sm py-8">Nenhum video</p>
+      ) : (
+        <div className="space-y-3">
+          {videos.map((video) => (
+            <div key={video.id} className="border border-gray-800 rounded-2xl overflow-hidden">
+              {/* User info header */}
+              <div className="flex items-center gap-3 px-4 py-3 bg-gray-900">
+                {video.user.avatar ? (
+                  <img src={video.user.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">{video.user.name?.charAt(0)?.toUpperCase()}</span>
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs font-semibold text-white">@{video.user.username}</p>
+                    {video.user.verified && <span className="text-blue-400 text-xs">✓</span>}
+                  </div>
+                  <p className="text-[10px] text-gray-500">{timeAgo(video.createdAt)}</p>
+                </div>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                  video.status === "PENDING" ? "bg-yellow-500/20 text-yellow-400" :
+                  video.status === "APPROVED" ? "bg-green-500/20 text-green-400" :
+                  "bg-red-500/20 text-red-400"
+                }`}>
+                  {video.status === "PENDING" ? "Pendente" : video.status === "APPROVED" ? "Aprovado" : "Rejeitado"}
+                </span>
+              </div>
+
+              {/* Video preview thumbnail */}
+              <button
+                onClick={() => setPreviewVideoUrl(video.url)}
+                className="w-full relative bg-gray-800 aspect-[9/16] max-h-80 overflow-hidden"
+              >
+                <video
+                  src={video.url}
+                  className="w-full h-full object-cover"
+                  muted
+                  preload="metadata"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+
+              {/* Caption */}
+              {video.caption && (
+                <div className="px-4 py-2 bg-gray-900/50">
+                  <p className="text-xs text-gray-300">{video.caption}</p>
+                </div>
+              )}
+
+              {/* Rejection reason */}
+              {video.status === "REJECTED" && video.rejectReason && (
+                <div className="px-4 py-2 bg-red-500/10 text-xs text-red-400">
+                  Motivo: {video.rejectReason}
+                </div>
+              )}
+
+              {/* Actions for pending videos */}
+              {video.status === "PENDING" && (
+                <div className="px-4 py-3 space-y-2 bg-gray-900/30">
+                  {rejectId === video.id ? (
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="Motivo da rejeicao (opcional)..."
+                        className="w-full px-3 py-2 border border-gray-700 bg-gray-800 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/30"
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={() => { setRejectId(null); setRejectReason(""); }} className="flex-1 py-2 text-xs text-gray-400 border border-gray-700 rounded-xl hover:bg-gray-800">
+                          Cancelar
+                        </button>
+                        <button
+                          onClick={() => onAction(video.id, "REJECT", rejectReason)}
+                          disabled={processing === video.id}
+                          className="flex-1 py-2 text-xs text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-50"
+                        >
+                          Confirmar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onAction(video.id, "APPROVE")}
+                        disabled={processing === video.id}
+                        className="flex-1 py-2.5 text-xs font-semibold text-white bg-purple-600 rounded-xl hover:bg-purple-700 disabled:opacity-50"
+                      >
+                        {processing === video.id ? "..." : "Aprovar"}
+                      </button>
+                      <button
+                        onClick={() => setRejectId(video.id)}
+                        disabled={processing === video.id}
+                        className="flex-1 py-2.5 text-xs font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-50"
+                      >
+                        Rejeitar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Deposits Tab ─────────────────────────────────────────────
+
+function DepositsTab({
+  deposits,
+  stats,
+}: {
+  deposits: DepositItem[];
+  stats: { totalDeposits: number; totalCoins: number } | null;
+}) {
+  return (
+    <div className="space-y-4">
+      {/* Stats summary */}
+      {stats && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-green-500/10 rounded-2xl p-4 border border-gray-800/50">
+            <p className="text-[11px] text-gray-400 font-medium">Total Depositos</p>
+            <p className="text-2xl font-bold text-green-400">{stats.totalDeposits.toLocaleString("pt-BR")}</p>
+          </div>
+          <div className="bg-green-500/10 rounded-2xl p-4 border border-gray-800/50">
+            <p className="text-[11px] text-gray-400 font-medium">Total Moedas</p>
+            <p className="text-2xl font-bold text-green-400">{stats.totalCoins.toLocaleString("pt-BR")}</p>
+          </div>
+        </div>
+      )}
+
+      {deposits.length === 0 ? (
+        <p className="text-center text-gray-500 text-sm py-8">Nenhum deposito</p>
+      ) : (
+        <div className="space-y-3">
+          {deposits.map((d) => (
+            <div key={d.id} className="border border-gray-800 rounded-2xl overflow-hidden">
+              <div className="flex items-center gap-3 px-4 py-3 bg-gray-900">
+                {d.user.avatar ? (
+                  <img src={d.user.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">{d.user.name?.charAt(0)?.toUpperCase()}</span>
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{d.user.name}</p>
+                  <p className="text-xs text-gray-400">@{d.user.username}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-green-400">+{d.amount.toLocaleString("pt-BR")}</p>
+                  <p className="text-[10px] text-gray-500">{timeAgo(d.createdAt)}</p>
+                </div>
+              </div>
+              <div className="px-4 py-2 bg-gray-900/50">
+                <p className="text-xs text-gray-400 truncate">{d.description}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">{d.user.email}</p>
+              </div>
             </div>
           ))}
         </div>
