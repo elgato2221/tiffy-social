@@ -105,7 +105,7 @@ function LoginContent() {
   // Choice screen
   if (mode === "choice") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black px-4">
+      <div className="min-h-screen flex items-center justify-center bg-black px-4 w-full max-w-full overflow-hidden">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-extrabold text-white tracking-tight">
