@@ -18,7 +18,7 @@ model User {
   avatar      String?
   gender      String    @default("MALE")
   role        String    @default("USER")
-  coins       Int       @default(100)
+  coins       Int       @default(0)
   messageCost Int       @default(5)
   online      Boolean   @default(false)
   verified    Boolean   @default(false)

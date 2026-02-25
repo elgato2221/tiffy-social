@@ -47,9 +47,9 @@ export async function POST(request: Request) {
     const emailVerificationToken = crypto.randomBytes(32).toString("hex");
     const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    // All users start as USER with 100 coins
+    // All users start as USER with 0 coins (must purchase)
     const role = "USER";
-    const coins = 100;
+    const coins = 0;
 
     // Create user
     const user = await prisma.user.create({

@@ -19,7 +19,7 @@ export async function POST() {
         password: hashedPassword,
         gender: "OTHER",
         role: "USER",
-        coins: 50,
+        coins: 0,
         isAnonymous: true,
       },
     });
