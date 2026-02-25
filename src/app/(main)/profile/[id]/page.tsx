@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import GiftModal from "@/components/GiftModal";
+import { CoinIcon } from "@/components/ui/CoinIcon";
 
 interface UserProfile {
   id: string;
@@ -349,7 +350,7 @@ export default function UserProfilePage() {
                       disabled={unlocking === item.id}
                       className="mt-2 px-3 py-1.5 bg-purple-500 text-white text-xs font-semibold rounded-full hover:bg-purple-600 transition disabled:opacity-50 shadow-lg"
                     >
-                      {unlocking === item.id ? "..." : `🪙 ${item.price}`}
+                      {unlocking === item.id ? "..." : <span className="flex items-center gap-1"><CoinIcon size="xs" /> {item.price}</span>}
                     </button>
                   </div>
                 )}

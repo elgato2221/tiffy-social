@@ -91,12 +91,16 @@ export default function MessagesPage() {
         <div className="divide-y divide-gray-800/50">
           {conversations.map((conv) => {
             const initial = conv.user.name?.charAt(0)?.toUpperCase() || "?";
-            const isAudio = conv.lastMessage.type === "audio";
-            const preview = isAudio
+            const msgType = conv.lastMessage.type;
+            const preview = msgType === "audio"
               ? "🎤 Audio"
-              : conv.lastMessage.content.length > 45
-                ? conv.lastMessage.content.slice(0, 45) + "..."
-                : conv.lastMessage.content;
+              : msgType === "gift"
+                ? "🎁 Presente"
+                : msgType === "locked_media"
+                  ? "🔒 Midia bloqueada"
+                  : conv.lastMessage.content.length > 45
+                    ? conv.lastMessage.content.slice(0, 45) + "..."
+                    : conv.lastMessage.content;
 
             return (
               <button

@@ -24,6 +24,7 @@ export async function GET(
         gender: true,
         role: true,
         coins: true,
+        messageCost: true,
         online: true,
         verified: true,
         createdAt: true,
@@ -41,7 +42,7 @@ export async function GET(
     }
 
     return NextResponse.json(user);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch user" },
       { status: 500 }
@@ -68,7 +69,15 @@ export async function PATCH(
     const body = await req.json();
     const validation = validateBody(updateProfileSchema, body);
     if (!validation.success) return validation.response;
-    const { name, bio, avatar } = validation.data;
+    const { name, bio, avatar, messageCost } = validation.data;
+
+    // Only verified users can set messageCost
+    if (messageCost !== undefined) {
+      const user = await prisma.user.findUnique({ where: { id }, select: { verified: true } });
+      if (!user?.verified) {
+        return NextResponse.json({ error: "Apenas usuarios verificados podem definir preco de mensagem" }, { status: 403 });
+      }
+    }
 
     const updated = await prisma.user.update({
       where: { id },
@@ -76,17 +85,19 @@ export async function PATCH(
         ...(name !== undefined && { name }),
         ...(bio !== undefined && { bio }),
         ...(avatar !== undefined && { avatar }),
+        ...(messageCost !== undefined && { messageCost }),
       },
       select: {
         id: true,
         name: true,
         bio: true,
         avatar: true,
+        messageCost: true,
       },
     });
 
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to update user" },
       { status: 500 }

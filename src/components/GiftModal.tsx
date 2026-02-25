@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { GIFT_TYPES } from "@/lib/utils";
+import { CoinIcon } from "@/components/ui/CoinIcon";
 
 interface GiftModalProps {
   receiverId: string;
@@ -106,8 +107,8 @@ export default function GiftModal({
                 <span className="text-xs font-semibold text-gray-300">
                   {gift.label}
                 </span>
-                <span className="text-xs text-purple-500 font-bold flex items-center gap-0.5">
-                  🪙 {gift.value}
+                <span className="text-xs text-purple-500 font-bold flex items-center gap-1">
+                  <CoinIcon size="xs" /> {gift.value}
                 </span>
               </button>
             ))}

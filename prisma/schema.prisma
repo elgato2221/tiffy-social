@@ -19,6 +19,7 @@ model User {
   gender      String    @default("MALE")
   role        String    @default("USER")
   coins       Int       @default(100)
+  messageCost Int       @default(5)
   online      Boolean   @default(false)
   verified    Boolean   @default(false)
   emailVerified Boolean @default(false)
@@ -86,6 +87,14 @@ model Message {
   receiverId String
   cost       Int      @default(0)
   read       Boolean  @default(false)
+  mediaUrl       String?
+  mediaType      String?
+  mediaPrice     Int?
+  mediaUnlocked  Boolean  @default(false)
+  mediaUnlockedBy String?
+  giftType       String?
+  giftEmoji      String?
+  giftValue      Int?
   createdAt  DateTime @default(now())
 
   sender   User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)

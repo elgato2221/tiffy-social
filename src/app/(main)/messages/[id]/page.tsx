@@ -5,6 +5,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { timeAgo, MESSAGE_COST, AUDIO_COST } from "@/lib/utils";
 import ChatBubble from "@/components/ChatBubble";
+import { CoinIcon } from "@/components/ui/CoinIcon";
 
 interface MessageUser {
   id: string;
@@ -24,6 +25,13 @@ interface Message {
   createdAt: string;
   sender: MessageUser;
   receiver: MessageUser;
+  giftType?: string | null;
+  giftEmoji?: string | null;
+  giftValue?: number | null;
+  mediaUrl?: string | null;
+  mediaType?: string | null;
+  mediaPrice?: number | null;
+  mediaUnlocked?: boolean;
 }
 
 interface UserProfile {
@@ -33,6 +41,8 @@ interface UserProfile {
   avatar: string | null;
   online: boolean;
   gender: string;
+  messageCost?: number;
+  verified?: boolean;
 }
 
 const EMOJIS = [
@@ -69,6 +79,15 @@ export default function ChatPage() {
   // Emoji picker state
   const [showEmojis, setShowEmojis] = useState(false);
 
+  // Locked media state
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [mediaPrice, setMediaPrice] = useState("50");
+  const [sendingMedia, setSendingMedia] = useState(false);
+  const [unlockingMessageId, setUnlockingMessageId] = useState<string | null>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+
   const myId = session?.user?.id;
 
   const scrollToBottom = useCallback(() => {
@@ -104,9 +123,10 @@ export default function ChatPage() {
 
     async function init() {
       try {
+        let userData: UserProfile | null = null;
         const userRes = await fetch(`/api/users/${otherUserId}`);
         if (userRes.ok) {
-          const userData = await userRes.json();
+          userData = await userRes.json();
           setOtherUser(userData);
         }
 
@@ -115,13 +135,16 @@ export default function ChatPage() {
           const msgData = await msgRes.json();
           setMessages(msgData);
 
+          // Use the other user's custom message cost
+          const userMsgCost = userData?.messageCost || MESSAGE_COST;
+
           if (msgData.length === 0) {
-            setMessageCost(MESSAGE_COST);
+            setMessageCost(userMsgCost);
             setIsInitiator(true);
           } else {
-            const firstMsg = msgData[0];
-            if (firstMsg.senderId === myId) {
-              setMessageCost(MESSAGE_COST);
+            const firstMsg = msgData.find((m: Message) => m.type !== "gift");
+            if (!firstMsg || firstMsg.senderId === myId) {
+              setMessageCost(userMsgCost);
               setIsInitiator(true);
             } else {
               setMessageCost(0);
@@ -315,6 +338,95 @@ export default function ChatPage() {
 
   const audioCost = isInitiator ? AUDIO_COST : 0;
 
+  function handleMediaSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+      alert("Selecione uma imagem ou video.");
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      alert("Arquivo muito grande. Maximo 100MB.");
+      return;
+    }
+    setMediaFile(file);
+    setMediaPreview(URL.createObjectURL(file));
+    setShowMediaPicker(true);
+    setShowEmojis(false);
+  }
+
+  function cancelMedia() {
+    setMediaFile(null);
+    if (mediaPreview) URL.revokeObjectURL(mediaPreview);
+    setMediaPreview(null);
+    setShowMediaPicker(false);
+    setMediaPrice("50");
+    if (mediaInputRef.current) mediaInputRef.current.value = "";
+  }
+
+  async function handleSendLockedMedia() {
+    if (!mediaFile || sendingMedia) return;
+    setSendingMedia(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", mediaFile);
+      const uploadRes = await fetch("/api/local-upload", { method: "POST", body: formData });
+      if (!uploadRes.ok) throw new Error("Erro ao enviar arquivo");
+      const { url } = await uploadRes.json();
+
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          receiverId: otherUserId,
+          content: "Midia bloqueada",
+          type: "locked_media",
+          mediaUrl: url,
+          mediaType: mediaFile.type.startsWith("video/") ? "video" : "photo",
+          mediaPrice: parseInt(mediaPrice) || 50,
+        }),
+      });
+      if (res.ok) {
+        const newMessage = await res.json();
+        setMessages((prev) => [...prev, newMessage]);
+        cancelMedia();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Erro ao enviar midia.");
+      }
+    } catch {
+      alert("Erro ao enviar midia. Tente novamente.");
+    } finally {
+      setSendingMedia(false);
+    }
+  }
+
+  async function handleUnlockMedia(messageId: string) {
+    setUnlockingMessageId(messageId);
+    try {
+      const res = await fetch("/api/messages/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId ? { ...m, mediaUnlocked: true, mediaUrl: data.mediaUrl } : m
+          )
+        );
+      } else {
+        const data = await res.json();
+        alert(data.error || "Erro ao desbloquear.");
+      }
+    } catch {
+      alert("Erro ao desbloquear. Tente novamente.");
+    } finally {
+      setUnlockingMessageId(null);
+    }
+  }
+
   if (status === "loading" || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
@@ -384,6 +496,14 @@ export default function ChatPage() {
               isMine={msg.senderId === myId}
               time={timeAgo(msg.createdAt)}
               cost={msg.cost}
+              giftEmoji={msg.giftEmoji}
+              giftValue={msg.giftValue}
+              mediaUrl={msg.mediaUrl}
+              mediaType={msg.mediaType}
+              mediaPrice={msg.mediaPrice}
+              mediaUnlocked={msg.mediaUnlocked}
+              onUnlockMedia={msg.type === "locked_media" && !msg.mediaUnlocked && msg.senderId !== myId ? () => handleUnlockMedia(msg.id) : undefined}
+              unlocking={unlockingMessageId === msg.id}
             />
           ))
         )}
@@ -454,9 +574,9 @@ export default function ChatPage() {
       <div className="flex-shrink-0 bg-black border-t border-gray-800 px-4 py-3 pb-20 lg:pb-3">
         <div className="mx-auto max-w-lg">
           {/* Cost indicator */}
-          {messageCost > 0 && !recording && !audioBlob && (
+          {messageCost > 0 && !recording && !audioBlob && !showMediaPicker && (
             <div className="flex items-center gap-1 mb-2 px-1">
-              <span className="text-xs">🪙</span>
+              <CoinIcon size="xs" />
               <span className="text-xs text-purple-600 font-medium">
                 Texto: {messageCost} moedas | Audio: {audioCost} moedas
               </span>
@@ -469,6 +589,65 @@ export default function ChatPage() {
               </span>
             </div>
           )}
+
+          {/* Media Preview */}
+          {showMediaPicker && mediaFile && (
+            <div className="mb-3 bg-gray-900 border border-gray-700 rounded-2xl p-3">
+              <div className="flex items-start gap-3">
+                <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
+                  {mediaFile.type.startsWith("video/") ? (
+                    <video src={mediaPreview!} className="w-full h-full object-cover" muted playsInline />
+                  ) : (
+                    <img src={mediaPreview!} alt="Preview" className="w-full h-full object-cover" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-2">Preco para desbloquear:</p>
+                  <div className="flex items-center gap-2">
+                    <CoinIcon size="sm" />
+                    <input
+                      type="number"
+                      value={mediaPrice}
+                      onChange={(e) => setMediaPrice(e.target.value)}
+                      min="1"
+                      max="10000"
+                      className="w-24 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <span className="text-xs text-gray-500">moedas</span>
+                  </div>
+                </div>
+                <button onClick={cancelMedia} className="text-gray-500 hover:text-gray-300 flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <button
+                onClick={handleSendLockedMedia}
+                disabled={sendingMedia}
+                className="w-full mt-3 py-2 bg-purple-500 text-white text-sm font-semibold rounded-xl hover:bg-purple-600 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {sendingMedia ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                    Enviar midia bloqueada
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          <input
+            ref={mediaInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+            onChange={handleMediaSelect}
+            className="hidden"
+          />
 
           {/* Recording UI */}
           {recording ? (
@@ -520,6 +699,18 @@ export default function ChatPage() {
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
+                </svg>
+              </button>
+
+              {/* Camera/media button */}
+              <button
+                type="button"
+                onClick={() => mediaInputRef.current?.click()}
+                className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-800 text-gray-400 hover:bg-gray-700 transition flex-shrink-0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
                 </svg>
               </button>
 

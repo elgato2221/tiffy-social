@@ -21,7 +21,15 @@ export const registerSchema = z.object({
 export const sendMessageSchema = z.object({
   receiverId: z.string().min(1),
   content: z.string().min(1, "Mensagem vazia").max(2000, "Mensagem muito longa"),
-  type: z.enum(["text", "audio"]).default("text"),
+  type: z.enum(["text", "audio", "locked_media", "gift"]).default("text"),
+  mediaUrl: z.string().optional(),
+  mediaType: z.enum(["photo", "video"]).optional(),
+  mediaPrice: z.number().int().min(1).max(10000).optional(),
+});
+
+// Unlock chat media
+export const unlockChatMediaSchema = z.object({
+  messageId: z.string().min(1),
 });
 
 // Video create (upload route)
@@ -85,6 +93,7 @@ export const updateProfileSchema = z.object({
   name: z.string().min(2).max(50).optional(),
   bio: z.string().max(300).optional().nullable(),
   avatar: z.string().optional().nullable(),
+  messageCost: z.number().int().min(5).max(100).optional(),
 });
 
 // Verification

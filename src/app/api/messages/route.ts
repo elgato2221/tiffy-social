@@ -68,7 +68,7 @@ export async function GET() {
     const conversations = Array.from(conversationMap.values());
 
     return NextResponse.json(conversations);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch conversations" },
       { status: 500 }
@@ -91,9 +91,22 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validation = validateBody(sendMessageSchema, body);
     if (!validation.success) return validation.response;
-    const { receiverId, content, type } = validation.data;
+    const { receiverId, content, type, mediaUrl, mediaType, mediaPrice } = validation.data;
 
-    const baseCost = type === "audio" ? AUDIO_COST : MESSAGE_COST;
+    // Look up receiver's custom message cost
+    const receiver = await prisma.user.findUnique({
+      where: { id: receiverId },
+      select: { messageCost: true },
+    });
+    const receiverMessageCost = receiver?.messageCost ?? MESSAGE_COST;
+
+    // Locked media messages are free to send (unlock costs separately)
+    // Gift messages are free (gift cost handled in gifts API)
+    const baseCost = type === "locked_media" || type === "gift"
+      ? 0
+      : type === "audio"
+        ? AUDIO_COST
+        : receiverMessageCost;
 
     const sender = await prisma.user.findUnique({
       where: { id: userId },
@@ -110,6 +123,7 @@ export async function POST(req: NextRequest) {
           { senderId: userId, receiverId },
           { senderId: receiverId, receiverId: userId },
         ],
+        type: { notIn: ["gift"] },
       },
       orderBy: { createdAt: "asc" },
       select: { senderId: true },
@@ -118,7 +132,6 @@ export async function POST(req: NextRequest) {
     // Initiator pays, responder is free
     let cost = 0;
     if (!firstMessage || firstMessage.senderId === userId) {
-      // No messages yet (I'm initiating) or I was the initiator
       cost = baseCost;
     }
 
@@ -174,6 +187,12 @@ export async function POST(req: NextRequest) {
           content,
           type,
           cost,
+          ...(type === "locked_media" && {
+            mediaUrl,
+            mediaType,
+            mediaPrice,
+            mediaUnlocked: false,
+          }),
         },
         include: {
           sender: {
@@ -189,7 +208,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(result, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to send message" },
       { status: 500 }

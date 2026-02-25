@@ -59,6 +59,10 @@ function getTransactionIcon(type: string): string {
       return "🔓";
     case "GALLERY_EARNING":
       return "🖼️";
+    case "MEDIA_UNLOCK":
+      return "🔓";
+    case "MEDIA_EARNING":
+      return "💎";
     default:
       return "🪙";
   }
@@ -88,6 +92,10 @@ function getTransactionLabel(type: string): string {
       return "Galeria desbloqueada";
     case "GALLERY_EARNING":
       return "Ganho de galeria";
+    case "MEDIA_UNLOCK":
+      return "Midia desbloqueada";
+    case "MEDIA_EARNING":
+      return "Ganho de midia";
     default:
       return "Transacao";
   }
@@ -114,6 +122,10 @@ function getTransactionIconBg(type: string): string {
     case "GALLERY_UNLOCK":
       return "bg-purple-400/15";
     case "GALLERY_EARNING":
+      return "bg-purple-500/25";
+    case "MEDIA_UNLOCK":
+      return "bg-purple-400/15";
+    case "MEDIA_EARNING":
       return "bg-purple-500/25";
     default:
       return "bg-gray-700/50";
@@ -316,7 +328,8 @@ function WalletPage() {
           t.type === "MESSAGE_RECEIVED" ||
           t.type === "GIFT_RECEIVED" ||
           t.type === "COMMENT_RECEIVED" ||
-          t.type === "GALLERY_EARNING"
+          t.type === "GALLERY_EARNING" ||
+          t.type === "MEDIA_EARNING"
       )
       .reduce((sum, t) => sum + t.amount, 0) || 0;
 
@@ -343,8 +356,8 @@ function WalletPage() {
       {/* Header */}
       <div className="sticky top-0 z-30 bg-black/70 backdrop-blur-xl border-b border-gray-800/50 px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-            <span className="text-sm">🪙</span>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
+            <span className="text-xs font-extrabold text-amber-900">C</span>
           </div>
           <h1 className="text-xl font-bold text-white">Carteira</h1>
         </div>
@@ -489,7 +502,7 @@ function WalletPage() {
                       : "bg-gray-800 group-hover:bg-gray-700"
                   }`}
                 >
-                  <span className="text-xl">🪙</span>
+                  <span className="text-xl font-extrabold text-amber-900">C</span>
                 </div>
                 <div className="text-left">
                   <p className="font-bold text-white">

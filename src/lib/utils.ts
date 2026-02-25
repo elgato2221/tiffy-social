@@ -18,6 +18,25 @@ export const COMMENT_COST = 10;
 export const MESSAGE_COST = 5;
 export const AUDIO_COST = 25;
 export const PLATFORM_FEE = 0.3; // 30% fee - receiver gets 70%
+export const MIN_MESSAGE_COST = 5;
+export const MAX_MESSAGE_COST = 100;
+
+export const GIFT_TYPES = [
+  { type: "HEART", emoji: "\u2764\uFE0F", value: 5, label: "Coração" },
+  { type: "ROSE", emoji: "\uD83C\uDF39", value: 10, label: "Rosa" },
+  { type: "FLOWERS", emoji: "\uD83D\uDC90", value: 100, label: "Flores" },
+  { type: "PERFUME", emoji: "\uD83E\uDDF4", value: 200, label: "Perfume" },
+  { type: "TEDDY_BEAR", emoji: "\uD83E\uDDF8", value: 500, label: "Ursinho" },
+  { type: "IPHONE", emoji: "\uD83D\uDCF1", value: 1000, label: "iPhone" },
+  { type: "CAR", emoji: "\uD83D\uDE97", value: 2000, label: "Carro" },
+  { type: "MANSION", emoji: "\uD83C\uDFF0", value: 5000, label: "Mansão" },
+  { type: "YACHT", emoji: "\uD83D\uDEE5\uFE0F", value: 10000, label: "Iate" },
+];
+
+export function giftTypeToEmoji(type: string): string {
+  const found = GIFT_TYPES.find((g) => g.type === type);
+  return found?.emoji || "\uD83C\uDF81";
+}
 
 /**
  * Resize an image file to a target aspect ratio and max resolution.
@@ -64,15 +83,3 @@ export function resizeImage(
     img.src = URL.createObjectURL(file);
   });
 }
-
-export const GIFT_TYPES = [
-  { type: "HEART", emoji: "❤️", value: 5, label: "Coração" },
-  { type: "ROSE", emoji: "🌹", value: 10, label: "Rosa" },
-  { type: "FLOWERS", emoji: "💐", value: 100, label: "Flores" },
-  { type: "PERFUME", emoji: "🧴", value: 200, label: "Perfume" },
-  { type: "TEDDY_BEAR", emoji: "🧸", value: 500, label: "Ursinho" },
-  { type: "IPHONE", emoji: "📱", value: 1000, label: "iPhone" },
-  { type: "CAR", emoji: "🚗", value: 2000, label: "Carro" },
-  { type: "MANSION", emoji: "🏰", value: 5000, label: "Mansão" },
-  { type: "YACHT", emoji: "🛥️", value: 10000, label: "Iate" },
-];

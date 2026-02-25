@@ -87,7 +87,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const users = await prisma.user.findMany({
-      where: { isAnonymous: false, verified: true },
+      where: { isAnonymous: false, verified: true, role: { not: "ADMIN" } },
       select: {
         id: true,
         name: true,

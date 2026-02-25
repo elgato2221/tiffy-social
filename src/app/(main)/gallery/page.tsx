@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { resizeImage } from "@/lib/utils";
+import { CoinIcon } from "@/components/ui/CoinIcon";
 
 interface GalleryItem {
   id: string;
@@ -304,7 +305,7 @@ export default function MyGalleryPage() {
 
                   {/* Price Badge */}
                   <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded-full">
-                    <span className="text-purple-400 text-[10px]">🪙</span>
+                    <CoinIcon size="xs" />
                     {item.price}
                   </div>
 
@@ -490,7 +491,7 @@ export default function MyGalleryPage() {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                    <span className="text-purple-500 text-sm">🪙</span>
+                    <CoinIcon size="xs" />
                   </div>
                   <input
                     type="number"

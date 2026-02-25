@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { sendGiftSchema } from "@/lib/validations";
 import { validateBody } from "@/lib/api-utils";
+import { giftTypeToEmoji } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -65,6 +66,20 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Create a message so the gift appears in chat
+      await tx.message.create({
+        data: {
+          senderId: userId,
+          receiverId,
+          content: `Enviou ${type}`,
+          type: "gift",
+          cost: 0,
+          giftType: type,
+          giftEmoji: giftTypeToEmoji(type),
+          giftValue: value,
+        },
+      });
+
       await tx.transaction.create({
         data: {
           userId,
@@ -87,7 +102,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(result, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to send gift" },
       { status: 500 }

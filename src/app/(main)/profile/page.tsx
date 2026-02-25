@@ -4,7 +4,8 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { resizeImage } from "@/lib/utils";
+import { resizeImage, MIN_MESSAGE_COST, MAX_MESSAGE_COST } from "@/lib/utils";
+import { CoinIcon } from "@/components/ui/CoinIcon";
 
 interface UserProfile {
   id: string;
@@ -16,6 +17,7 @@ interface UserProfile {
   gender: string;
   role: string;
   coins: number;
+  messageCost: number;
   online: boolean;
   verified: boolean;
   createdAt: string;
@@ -50,6 +52,7 @@ export default function MyProfilePage() {
   const [showEdit, setShowEdit] = useState(false);
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [editMessageCost, setEditMessageCost] = useState(5);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
@@ -87,6 +90,7 @@ export default function MyProfilePage() {
           setProfile(data);
           setEditName(data.name || "");
           setEditBio(data.bio || "");
+          setEditMessageCost(data.messageCost || 5);
         }
         if (followRes.ok) {
           const followData = await followRes.json();
@@ -164,12 +168,16 @@ export default function MyProfilePage() {
       const res = await fetch(`/api/users/${myId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName, bio: editBio }),
+        body: JSON.stringify({
+          name: editName,
+          bio: editBio,
+          ...(profile?.verified && { messageCost: editMessageCost }),
+        }),
       });
 
       if (res.ok) {
         const updated = await res.json();
-        setProfile((prev) => (prev ? { ...prev, name: updated.name ?? editName, bio: updated.bio ?? editBio } : prev));
+        setProfile((prev) => (prev ? { ...prev, name: updated.name ?? editName, bio: updated.bio ?? editBio, ...(updated.messageCost !== undefined && { messageCost: updated.messageCost }) } : prev));
         setShowEdit(false);
       } else {
         alert("Erro ao salvar perfil. Tente novamente.");
@@ -484,6 +492,28 @@ export default function MyProfilePage() {
                 />
               </div>
             </div>
+
+            {profile.verified && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Preco da Mensagem (moedas)
+                </label>
+                <div className="flex items-center gap-2">
+                  <CoinIcon size="sm" />
+                  <input
+                    type="number"
+                    value={editMessageCost}
+                    onChange={(e) => setEditMessageCost(Math.max(MIN_MESSAGE_COST, Math.min(MAX_MESSAGE_COST, parseInt(e.target.value) || MIN_MESSAGE_COST)))}
+                    min={MIN_MESSAGE_COST}
+                    max={MAX_MESSAGE_COST}
+                    className="flex-1 px-4 py-3 border border-gray-700 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Valor que outros pagam pra te enviar mensagem ({MIN_MESSAGE_COST}-{MAX_MESSAGE_COST})
+                </p>
+              </div>
+            )}
 
             <div className="flex gap-3 mt-6">
               <button
