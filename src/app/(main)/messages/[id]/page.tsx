@@ -94,6 +94,23 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  // Re-evaluate who is the initiator whenever messages change
+  const updateInitiatorStatus = useCallback((msgs: Message[], userMsgCost: number) => {
+    if (msgs.length === 0) {
+      setMessageCost(userMsgCost);
+      setIsInitiator(true);
+    } else {
+      const firstMsg = msgs.find((m) => m.type !== "gift");
+      if (!firstMsg || firstMsg.senderId === myId) {
+        setMessageCost(userMsgCost);
+        setIsInitiator(true);
+      } else {
+        setMessageCost(0);
+        setIsInitiator(false);
+      }
+    }
+  }, [myId]);
+
   const fetchMessages = useCallback(async () => {
     if (!otherUserId) return;
     try {
@@ -101,16 +118,17 @@ export default function ChatPage() {
       if (res.ok) {
         const data = await res.json();
         setMessages((prev) => {
-          if (data.length !== prev.length) return data;
-          const lastNew = data[data.length - 1]?.id;
-          const lastOld = prev[prev.length - 1]?.id;
-          return lastNew !== lastOld ? data : prev;
+          const changed = data.length !== prev.length || data[data.length - 1]?.id !== prev[prev.length - 1]?.id;
+          return changed ? data : prev;
         });
+        // Always re-evaluate initiator status to keep it in sync
+        const cost = otherUser?.messageCost || MESSAGE_COST;
+        updateInitiatorStatus(data, cost);
       }
     } catch (error) {
       console.error("Erro ao carregar mensagens:", error);
     }
-  }, [otherUserId]);
+  }, [otherUserId, otherUser, updateInitiatorStatus]);
 
   // Fetch other user's profile and messages
   useEffect(() => {
@@ -135,22 +153,8 @@ export default function ChatPage() {
           const msgData = await msgRes.json();
           setMessages(msgData);
 
-          // Use the other user's custom message cost
           const userMsgCost = userData?.messageCost || MESSAGE_COST;
-
-          if (msgData.length === 0) {
-            setMessageCost(userMsgCost);
-            setIsInitiator(true);
-          } else {
-            const firstMsg = msgData.find((m: Message) => m.type !== "gift");
-            if (!firstMsg || firstMsg.senderId === myId) {
-              setMessageCost(userMsgCost);
-              setIsInitiator(true);
-            } else {
-              setMessageCost(0);
-              setIsInitiator(false);
-            }
-          }
+          updateInitiatorStatus(msgData, userMsgCost);
         }
       } catch (error) {
         console.error("Erro na inicializacao:", error);
