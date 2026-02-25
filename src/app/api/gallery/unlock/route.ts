@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { unlockGallerySchema } from "@/lib/validations";
+import { validateBody } from "@/lib/api-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,14 +17,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { itemId } = await req.json();
-
-    if (!itemId) {
-      return NextResponse.json(
-        { error: "itemId is required" },
-        { status: 400 }
-      );
-    }
+    const body = await req.json();
+    const validation = validateBody(unlockGallerySchema, body);
+    if (!validation.success) return validation.response;
+    const { itemId } = validation.data;
 
     const item = await prisma.galleryItem.findUnique({
       where: { id: itemId },

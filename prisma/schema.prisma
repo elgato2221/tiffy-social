@@ -21,8 +21,14 @@ model User {
   coins       Int       @default(100)
   online      Boolean   @default(false)
   verified    Boolean   @default(false)
+  emailVerified Boolean @default(false)
+  emailVerificationToken String? @unique
+  emailVerificationExpires DateTime?
+  isAnonymous Boolean   @default(false)
   loginStreak Int       @default(0)
   lastRewardAt DateTime?
+  passwordResetToken   String?   @unique
+  passwordResetExpires DateTime?
   createdAt   DateTime  @default(now())
 
   videos         Video[]
@@ -39,9 +45,18 @@ model User {
   gallery        GalleryItem[]
   galleryUnlocks GalleryUnlock[]
   dailyRewards   DailyReward[]
+  status      String    @default("ACTIVE") // ACTIVE, SUSPENDED, BANNED
+  bannedAt    DateTime?
+  banReason   String?
+
+  withdrawals    WithdrawalRequest[]
+  verifications  VerificationRequest[]
+  reports        Report[]
+  auditLogs      AuditLog[]
 
   @@index([username])
   @@index([email])
+  @@index([status])
 }
 
 model Video {
@@ -57,6 +72,7 @@ model Video {
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes    Like[]
   comments Comment[]
+  reports  Report[]  @relation("VideoReports")
 
   @@index([userId])
   @@index([createdAt])
@@ -96,12 +112,17 @@ model Comment {
   content   String
   userId    String
   videoId   String
+  parentId  String?
   createdAt DateTime @default(now())
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video   Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+  reports Report[]  @relation("CommentReports")
 
   @@index([videoId])
+  @@index([parentId])
   @@index([createdAt])
 }
 
@@ -198,5 +219,70 @@ model Transaction {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([createdAt])
+}
+
+model WithdrawalRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  pixKey    String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model VerificationRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  selfieUrl String
+  status    String   @default("PENDING")
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  userId    String
+  reason    String
+  videoId   String?
+  commentId String?
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video   Video?   @relation("VideoReports", fields: [videoId], references: [id], onDelete: Cascade)
+  comment Comment? @relation("CommentReports", fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([videoId])
+  @@index([commentId])
+  @@index([status])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String   // BAN_USER, SUSPEND_USER, CHANGE_ROLE, RESOLVE_REPORT, APPROVE_WITHDRAWAL, etc.
+  targetType String   // USER, VIDEO, REPORT, WITHDRAWAL, VERIFICATION
+  targetId   String
+  details    String?
+  createdAt  DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
   @@index([createdAt])
 }

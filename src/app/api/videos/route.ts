@@ -10,8 +10,11 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const skip = (page - 1) * limit;
 
+    const where = { user: { verified: true } };
+
     const [videos, total] = await Promise.all([
       prisma.video.findMany({
+        where,
         orderBy: { createdAt: "desc" },
         skip,
         take: limit,
@@ -22,6 +25,7 @@ export async function GET(req: NextRequest) {
               name: true,
               username: true,
               avatar: true,
+              verified: true,
             },
           },
           likes: {
@@ -32,7 +36,7 @@ export async function GET(req: NextRequest) {
           },
         },
       }),
-      prisma.video.count(),
+      prisma.video.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -62,6 +66,12 @@ export async function POST(req: NextRequest) {
     const userId = session.user?.id;
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Only verified users can post
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { verified: true } });
+    if (!user?.verified) {
+      return NextResponse.json({ error: "Apenas perfis verificados podem publicar." }, { status: 403 });
     }
 
     const { url, caption, duration } = await req.json();

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { updateProfileSchema } from "@/lib/validations";
+import { validateBody } from "@/lib/api-utils";
 
 export async function GET(
   req: NextRequest,
@@ -23,6 +25,7 @@ export async function GET(
         role: true,
         coins: true,
         online: true,
+        verified: true,
         createdAt: true,
         _count: {
           select: {
@@ -62,18 +65,23 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { name, bio } = await req.json();
+    const body = await req.json();
+    const validation = validateBody(updateProfileSchema, body);
+    if (!validation.success) return validation.response;
+    const { name, bio, avatar } = validation.data;
 
     const updated = await prisma.user.update({
       where: { id },
       data: {
         ...(name !== undefined && { name }),
         ...(bio !== undefined && { bio }),
+        ...(avatar !== undefined && { avatar }),
       },
       select: {
         id: true,
         name: true,
         bio: true,
+        avatar: true,
       },
     });
 

@@ -1,27 +1,20 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import prisma from "@/lib/prisma";
+import { registerSchema } from "@/lib/validations";
+import { validateBody } from "@/lib/api-utils";
+import { sendVerificationEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, username, email, password, gender } = body;
 
-    // Validate required fields
-    if (!name || !username || !email || !password || !gender) {
-      return NextResponse.json(
-        { error: "Todos os campos sao obrigatorios." },
-        { status: 400 }
-      );
-    }
+    // Validate with Zod
+    const validation = validateBody(registerSchema, body);
+    if (!validation.success) return validation.response;
 
-    // Validate gender value
-    if (!["MALE", "FEMALE"].includes(gender)) {
-      return NextResponse.json(
-        { error: "Genero invalido." },
-        { status: 400 }
-      );
-    }
+    const { name, username, email, password, gender } = validation.data;
 
     // Check if email already exists
     const existingEmail = await prisma.user.findUnique({
@@ -50,10 +43,13 @@ export async function POST(request: Request) {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Determine role and coins based on gender
-    const isFemale = gender === "FEMALE";
-    const role = isFemale ? "CREATOR" : "USER";
-    const coins = isFemale ? 200 : 100;
+    // Generate email verification token (24h expiry)
+    const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+    const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    // All users start as USER with 100 coins
+    const role = "USER";
+    const coins = 100;
 
     // Create user
     const user = await prisma.user.create({
@@ -65,13 +61,20 @@ export async function POST(request: Request) {
         gender,
         role,
         coins,
+        emailVerificationToken,
+        emailVerificationExpires,
       },
     });
 
-    // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
+    // Send verification email (non-blocking)
+    sendVerificationEmail(email, emailVerificationToken).catch((err) => {
+      console.error("Failed to send verification email:", err);
+    });
 
-    return NextResponse.json(userWithoutPassword, { status: 201 });
+    // Return user without password
+    const { password: _, emailVerificationToken: _t, ...userWithoutSensitive } = user;
+
+    return NextResponse.json(userWithoutSensitive, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar usuario:", error);
     return NextResponse.json(
@@ -84,17 +87,17 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const users = await prisma.user.findMany({
+      where: { isAnonymous: false, verified: true },
       select: {
         id: true,
         name: true,
         username: true,
-        email: true,
         bio: true,
         avatar: true,
         gender: true,
         role: true,
-        coins: true,
         online: true,
+        verified: true,
         createdAt: true,
       },
     });

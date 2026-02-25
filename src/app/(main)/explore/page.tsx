@@ -74,16 +74,16 @@ export default function ExplorePage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-black pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-white/80 px-4 pb-3 pt-4 backdrop-blur-lg">
-        <h1 className="mb-3 text-xl font-bold text-gray-900">Descobrir</h1>
+      <div className="sticky top-0 z-20 bg-black/80 px-4 pb-3 pt-4 backdrop-blur-md border-b border-gray-800">
+        <h1 className="mb-3 text-xl font-bold text-white">Descobrir</h1>
 
         {/* Search Bar */}
         <div className="relative mb-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -100,7 +100,7 @@ export default function ExplorePage() {
             placeholder="Buscar pessoas..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-pink-300 focus:bg-white focus:ring-2 focus:ring-pink-100"
+            className="w-full rounded-xl border border-gray-700 bg-gray-900 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 outline-none transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
           />
         </div>
 
@@ -112,8 +112,8 @@ export default function ExplorePage() {
               onClick={() => setActiveTab(tab.key)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
                 activeTab === tab.key
-                  ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/20"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-purple-400 to-purple-600 text-white shadow-md shadow-purple-500/20"
+                  : "bg-gray-900 text-gray-400 hover:bg-gray-800"
               }`}
             >
               {tab.label}
@@ -127,16 +127,16 @@ export default function ExplorePage() {
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="flex flex-col items-center gap-3">
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-pink-500 border-t-transparent" />
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
               <p className="text-sm text-gray-400">Carregando...</p>
             </div>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-900">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8 text-gray-300"
+                className="h-8 w-8 text-gray-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -149,10 +149,10 @@ export default function ExplorePage() {
                 />
               </svg>
             </div>
-            <p className="mt-3 text-sm font-medium text-gray-500">
+            <p className="mt-3 text-sm font-medium text-gray-400">
               Nenhuma pessoa encontrada
             </p>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-500">
               Tente ajustar os filtros ou a busca
             </p>
           </div>

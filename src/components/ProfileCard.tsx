@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 
 interface ProfileUser {
   id: string;
@@ -19,9 +18,9 @@ interface ProfileCardProps {
 }
 
 const gradients = [
-  "from-pink-400 to-purple-600",
-  "from-rose-400 to-orange-500",
-  "from-violet-500 to-fuchsia-500",
+  "from-purple-400 to-purple-600",
+  "from-purple-300 to-purple-500",
+  "from-purple-500 to-purple-700",
 ];
 
 export default function ProfileCard({ user, index = 0 }: ProfileCardProps) {
@@ -32,11 +31,10 @@ export default function ProfileCard({ user, index = 0 }: ProfileCardProps) {
       <div className="group relative aspect-square overflow-hidden rounded-2xl shadow-md transition-transform hover:scale-[1.02] active:scale-[0.98]">
         {/* Background: Avatar or Gradient */}
         {user.avatar ? (
-          <Image
+          <img
             src={user.avatar}
             alt={user.name}
-            fill
-            className="object-cover transition-transform group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105"
           />
         ) : (
           <div
@@ -52,8 +50,8 @@ export default function ProfileCard({ user, index = 0 }: ProfileCardProps) {
         {user.online && (
           <div className="absolute right-2.5 top-2.5 z-10">
             <span className="relative flex h-3.5 w-3.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-              <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75" />
+              <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-purple-500" />
             </span>
           </div>
         )}

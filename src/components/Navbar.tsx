@@ -83,7 +83,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-800 bg-black shadow-[0_-2px_10px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex max-w-lg items-center justify-around py-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
@@ -93,7 +93,7 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex -mt-5 h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-rose-500 shadow-lg shadow-pink-500/30 transition-transform hover:scale-105 active:scale-95"
+                className="flex -mt-5 h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-purple-600 shadow-lg shadow-purple-500/30 transition-transform hover:scale-105 active:scale-95"
               >
                 {item.icon(false)}
               </Link>
@@ -105,13 +105,13 @@ export default function Navbar() {
               key={item.href}
               href={item.href}
               className={`relative flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
-                isActive ? "text-pink-500" : "text-gray-400 hover:text-gray-600"
+                isActive ? "text-purple-500" : "text-gray-400 hover:text-white"
               }`}
             >
               {item.icon(isActive)}
               <span className="text-[10px] font-medium">{item.label}</span>
               {item.badge && item.badge > 0 ? (
-                <span className="absolute -top-0.5 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white">
+                <span className="absolute -top-0.5 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-purple-500 text-[9px] font-bold text-white">
                   {item.badge > 9 ? "9+" : item.badge}
                 </span>
               ) : null}

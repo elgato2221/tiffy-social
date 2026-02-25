@@ -79,11 +79,11 @@ const navLinks = [
 ];
 
 const avatarColors = [
-  "from-pink-400 to-rose-500",
-  "from-violet-400 to-purple-500",
-  "from-cyan-400 to-blue-500",
-  "from-amber-400 to-orange-500",
-  "from-emerald-400 to-green-500",
+  "from-purple-400 to-purple-600",
+  "from-purple-300 to-purple-500",
+  "from-purple-400 to-blue-500",
+  "from-purple-500 to-purple-700",
+  "from-purple-300 to-purple-600",
 ];
 
 export default function LeftSidebar() {
@@ -107,7 +107,7 @@ export default function LeftSidebar() {
     <aside className="hidden lg:flex flex-col w-64 xl:w-72 h-screen sticky top-0 border-r border-gray-800 bg-black px-4 py-6 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {/* Logo */}
       <Link href="/feed" className="flex items-center gap-2.5 px-3 mb-8">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-rose-500">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-400 to-purple-600">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
             <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
           </svg>
@@ -125,7 +125,7 @@ export default function LeftSidebar() {
               href={link.href}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 isActive
-                  ? "bg-pink-500/10 text-pink-500"
+                  ? "bg-purple-500/10 text-purple-500"
                   : "text-gray-400 hover:bg-white/5 hover:text-white"
               }`}
             >
@@ -139,7 +139,7 @@ export default function LeftSidebar() {
       {/* Upload Button */}
       <Link
         href="/upload"
-        className="mb-8 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-pink-500/25 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        className="mb-8 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-400 to-purple-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-purple-500/25 transition-transform hover:scale-[1.02] active:scale-[0.98]"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -174,7 +174,7 @@ export default function LeftSidebar() {
                   </div>
                 )}
                 {user.online && (
-                  <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-black bg-green-400" />
+                  <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-black bg-purple-400" />
                 )}
               </div>
               <div className="min-w-0 flex-1">

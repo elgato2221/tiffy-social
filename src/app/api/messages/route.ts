@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { MESSAGE_COST, AUDIO_COST, PLATFORM_FEE } from "@/lib/utils";
+import { sendMessageSchema } from "@/lib/validations";
+import { validateBody } from "@/lib/api-utils";
 
 export async function GET() {
   try {
@@ -85,14 +88,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { receiverId, content } = await req.json();
+    const body = await req.json();
+    const validation = validateBody(sendMessageSchema, body);
+    if (!validation.success) return validation.response;
+    const { receiverId, content, type } = validation.data;
 
-    if (!receiverId || !content) {
-      return NextResponse.json(
-        { error: "receiverId and content are required" },
-        { status: 400 }
-      );
-    }
+    const baseCost = type === "audio" ? AUDIO_COST : MESSAGE_COST;
 
     const sender = await prisma.user.findUnique({
       where: { id: userId },
@@ -102,14 +103,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Sender not found" }, { status: 404 });
     }
 
-    const cost = sender.gender === "MALE" ? 5 : 0;
+    // Determine who initiated the conversation
+    const firstMessage = await prisma.message.findFirst({
+      where: {
+        OR: [
+          { senderId: userId, receiverId },
+          { senderId: receiverId, receiverId: userId },
+        ],
+      },
+      orderBy: { createdAt: "asc" },
+      select: { senderId: true },
+    });
+
+    // Initiator pays, responder is free
+    let cost = 0;
+    if (!firstMessage || firstMessage.senderId === userId) {
+      // No messages yet (I'm initiating) or I was the initiator
+      cost = baseCost;
+    }
 
     if (cost > 0 && sender.coins < cost) {
       return NextResponse.json(
-        { error: "Insufficient coins" },
+        { error: "Moedas insuficientes" },
         { status: 403 }
       );
     }
+
+    // Platform takes 30% fee, receiver gets 70%
+    const receiverAmount = cost > 0 ? Math.floor(cost * (1 - PLATFORM_FEE)) : 0;
 
     const result = await prisma.$transaction(async (tx) => {
       if (cost > 0) {
@@ -118,10 +139,12 @@ export async function POST(req: NextRequest) {
           data: { coins: { decrement: cost } },
         });
 
-        await tx.user.update({
-          where: { id: receiverId },
-          data: { coins: { increment: cost } },
-        });
+        if (receiverAmount > 0) {
+          await tx.user.update({
+            where: { id: receiverId },
+            data: { coins: { increment: receiverAmount } },
+          });
+        }
 
         await tx.transaction.create({
           data: {
@@ -132,14 +155,16 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        await tx.transaction.create({
-          data: {
-            userId: receiverId,
-            type: "MESSAGE_RECEIVED",
-            amount: cost,
-            description: `Received message from user`,
-          },
-        });
+        if (receiverAmount > 0) {
+          await tx.transaction.create({
+            data: {
+              userId: receiverId,
+              type: "MESSAGE_RECEIVED",
+              amount: receiverAmount,
+              description: `Received message from user`,
+            },
+          });
+        }
       }
 
       const message = await tx.message.create({
@@ -147,6 +172,7 @@ export async function POST(req: NextRequest) {
           senderId: userId,
           receiverId,
           content,
+          type,
           cost,
         },
         include: {

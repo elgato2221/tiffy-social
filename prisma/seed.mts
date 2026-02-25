@@ -70,6 +70,23 @@ async function main() {
     },
   });
 
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@tiffy.com" },
+    update: {},
+    create: {
+      name: "Admin Tiffy",
+      username: "admin",
+      email: "admin@tiffy.com",
+      password,
+      bio: "Administrador da plataforma",
+      gender: "MALE",
+      role: "ADMIN",
+      coins: 99999,
+      online: true,
+      verified: true,
+    },
+  });
+
   const videos = await Promise.all([
     prisma.video.create({
       data: { url: "/uploads/sample1.mp4", caption: "Dia lindo na praia!", duration: 15, views: 234, userId: maria.id },
@@ -112,7 +129,7 @@ async function main() {
   });
 
   console.log("Seed completed!");
-  console.log("Users: joao@tiffy.com / maria@tiffy.com / ana@tiffy.com / pedro@tiffy.com (password: 123456)");
+  console.log("Users: joao@tiffy.com / maria@tiffy.com / ana@tiffy.com / pedro@tiffy.com / admin@tiffy.com (password: 123456)");
 }
 
 main()

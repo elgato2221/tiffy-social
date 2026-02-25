@@ -28,6 +28,14 @@ export const authOptions: NextAuthOptions = {
 
         if (!user) return null;
 
+        // Block banned/suspended users
+        if (user.status === "BANNED") {
+          throw new Error("Sua conta foi banida.");
+        }
+        if (user.status === "SUSPENDED") {
+          throw new Error("Sua conta esta suspensa.");
+        }
+
         const isValid = await compare(credentials.password, user.password);
         if (!isValid) return null;
 

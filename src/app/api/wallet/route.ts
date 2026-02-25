@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { purchaseCoinsSchema } from "@/lib/validations";
+import { validateBody } from "@/lib/api-utils";
 
 export async function GET() {
   try {
@@ -54,14 +56,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { amount } = await req.json();
-
-    if (!amount || amount <= 0) {
-      return NextResponse.json(
-        { error: "Invalid amount" },
-        { status: 400 }
-      );
-    }
+    const body = await req.json();
+    const validation = validateBody(purchaseCoinsSchema, body);
+    if (!validation.success) return validation.response;
+    const { amount } = validation.data;
 
     const result = await prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({

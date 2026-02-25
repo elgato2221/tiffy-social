@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { sendGiftSchema } from "@/lib/validations";
+import { validateBody } from "@/lib/api-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,21 +17,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { receiverId, type, value } = await req.json();
-
-    if (!receiverId || !type || !value) {
-      return NextResponse.json(
-        { error: "receiverId, type, and value are required" },
-        { status: 400 }
-      );
-    }
-
-    if (value <= 0) {
-      return NextResponse.json(
-        { error: "Gift value must be positive" },
-        { status: 400 }
-      );
-    }
+    const body = await req.json();
+    const validation = validateBody(sendGiftSchema, body);
+    if (!validation.success) return validation.response;
+    const { receiverId, type, value } = validation.data;
 
     const sender = await prisma.user.findUnique({
       where: { id: userId },

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { createGalleryItemSchema } from "@/lib/validations";
+import { validateBody } from "@/lib/api-utils";
 
 export async function GET(req: NextRequest) {
   try {
@@ -70,15 +72,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { url, type = "PHOTO", price = 10, caption } = body;
+    // Check verification
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { verified: true },
+    });
 
-    if (!url) {
+    if (!user?.verified) {
       return NextResponse.json(
-        { error: "url is required" },
-        { status: 400 }
+        { error: "Verifique seu perfil para publicar na galeria" },
+        { status: 403 }
       );
     }
+
+    const body = await req.json();
+    const validation = validateBody(createGalleryItemSchema, body);
+    if (!validation.success) return validation.response;
+    const { url, type, price, caption } = validation.data;
 
     const item = await prisma.galleryItem.create({
       data: {

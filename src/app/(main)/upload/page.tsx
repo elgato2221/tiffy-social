@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
+import Link from "next/link";
 export default function UploadPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -16,26 +16,55 @@ export default function UploadPage() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [verified, setVerified] = useState<boolean | null>(null);
 
-  const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
+    if (status !== "authenticated" || !session?.user?.id) return;
+    fetch(`/api/users/${session.user.id}`)
+      .then((r) => r.json())
+      .then((d) => setVerified(d.verified || false))
+      .catch(() => setVerified(false));
+  }, [status, session, router]);
+
+  const MAX_SIZE = 350 * 1024 * 1024; // 350MB
   const ALLOWED_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
   const handleFile = useCallback((selectedFile: File) => {
     setError(null);
 
     if (!ALLOWED_TYPES.includes(selectedFile.type)) {
-      setError("Formato não suportado. Use MP4, WebM ou MOV.");
+      setError("Formato nao suportado. Use MP4, WebM ou MOV.");
       return;
     }
 
     if (selectedFile.size > MAX_SIZE) {
-      setError("Arquivo muito grande. Máximo 50MB.");
+      setError("Arquivo muito grande. Maximo 350MB.");
       return;
     }
 
-    setFile(selectedFile);
+    // Validate aspect ratio - only vertical videos (9:16 Reels format)
     const url = URL.createObjectURL(selectedFile);
-    setPreview(url);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      const { videoWidth, videoHeight } = video;
+      if (videoWidth >= videoHeight) {
+        setError("Apenas videos verticais (formato Reels 9:16). Grave seu video em pe!");
+        URL.revokeObjectURL(url);
+        return;
+      }
+      setFile(selectedFile);
+      setPreview(url);
+    };
+    video.onerror = () => {
+      setError("Nao foi possivel ler o video. Tente outro arquivo.");
+      URL.revokeObjectURL(url);
+    };
+    video.src = url;
   }, []);
 
   const handleDrop = useCallback(
@@ -80,36 +109,33 @@ export default function UploadPage() {
     setError(null);
 
     try {
+      // Step 1: Upload file locally
       const formData = new FormData();
-      formData.append("video", file);
-      formData.append("caption", caption);
-
-      // Simulate progress since fetch doesn't support progress natively
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 300);
-
-      const res = await fetch("/api/upload", {
+      formData.append("file", file);
+      const uploadRes = await fetch("/api/local-upload", {
         method: "POST",
         body: formData,
       });
 
-      clearInterval(progressInterval);
+      if (!uploadRes.ok) throw new Error("Erro ao enviar arquivo");
+      const { url } = await uploadRes.json();
+
+      setProgress(80);
+
+      // Step 2: Create video record with the local URL
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, caption }),
+      });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Erro ao fazer upload");
+        throw new Error(data.error || "Erro ao publicar video");
       }
 
       setProgress(100);
 
-      // Small delay to show 100% before redirecting
       setTimeout(() => {
         router.push("/feed");
       }, 500);
@@ -125,13 +151,43 @@ export default function UploadPage() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  // Not verified - show block
+  if (verified === false) {
+    return (
+      <div className="min-h-screen bg-black pb-24">
+        <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-gray-800">
+          <div className="mx-auto max-w-lg px-4 py-4">
+            <h1 className="text-center text-lg font-bold text-white">Novo Video</h1>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-24 px-6">
+          <div className="w-20 h-20 rounded-full bg-gray-900 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-bold text-white">Perfil nao verificado</h2>
+          <p className="text-gray-400 text-sm mt-2 text-center max-w-xs">
+            Verifique seu perfil para publicar videos na plataforma.
+          </p>
+          <Link
+            href="/verify"
+            className="mt-6 px-6 py-2.5 bg-gradient-to-r from-purple-400 to-purple-600 text-white font-semibold rounded-xl shadow-md transition hover:scale-105"
+          >
+            Verificar agora
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-black pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-gray-800">
         <div className="mx-auto max-w-lg px-4 py-4">
-          <h1 className="text-center text-lg font-bold text-gray-900">
-            Novo Vídeo
+          <h1 className="text-center text-lg font-bold text-white">
+            Novo Video
           </h1>
         </div>
       </div>
@@ -139,7 +195,7 @@ export default function UploadPage() {
       <div className="mx-auto max-w-lg px-4 py-6">
         {/* Error message */}
         {error && (
-          <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+          <div className="mb-4 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
             {error}
           </div>
         )}
@@ -154,11 +210,11 @@ export default function UploadPage() {
             onClick={() => fileInputRef.current?.click()}
             className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 transition-all ${
               dragActive
-                ? "border-pink-500 bg-pink-50"
-                : "border-gray-300 bg-white hover:border-pink-400 hover:bg-pink-50/50"
+                ? "border-purple-500 bg-purple-500/10"
+                : "border-gray-700 bg-gray-900 hover:border-purple-500 hover:bg-gray-800/50"
             }`}
           >
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-rose-500">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-purple-600">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-8 w-8 text-white"
@@ -174,27 +230,27 @@ export default function UploadPage() {
                 />
               </svg>
             </div>
-            <p className="mb-1 text-base font-semibold text-gray-700">
-              {dragActive ? "Solte o vídeo aqui" : "Selecione um vídeo"}
+            <p className="mb-1 text-base font-semibold text-gray-300">
+              {dragActive ? "Solte o video aqui" : "Selecione um video"}
             </p>
-            <p className="text-sm text-gray-400">
-              MP4, WebM ou MOV - Máximo 50MB
+            <p className="text-sm text-gray-500">
+              MP4, WebM ou MOV - Formato vertical (9:16) - Max 350MB
             </p>
             <button
               type="button"
-              className="mt-4 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-pink-500/25 transition-transform hover:scale-105 active:scale-95"
+              className="mt-4 rounded-full bg-gradient-to-r from-purple-400 to-purple-600 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-purple-500/25 transition-transform hover:scale-105 active:scale-95"
             >
               Escolher arquivo
             </button>
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Video preview */}
-            <div className="relative overflow-hidden rounded-2xl bg-black">
+            {/* Video preview - Reels format */}
+            <div className="relative overflow-hidden rounded-2xl bg-black mx-auto max-w-[280px] aspect-[9/16]">
               <video
                 src={preview!}
                 controls
-                className="mx-auto max-h-[400px] w-full object-contain"
+                className="w-full h-full object-cover"
                 playsInline
               />
               {!uploading && (
@@ -221,11 +277,11 @@ export default function UploadPage() {
             </div>
 
             {/* File info */}
-            <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-100">
+            <div className="flex items-center gap-3 rounded-xl bg-gray-900 px-4 py-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-pink-500"
+                  className="h-5 w-5 text-purple-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -239,16 +295,16 @@ export default function UploadPage() {
                 </svg>
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="truncate text-sm font-medium text-gray-700">
+                <p className="truncate text-sm font-medium text-gray-300">
                   {file.name}
                 </p>
-                <p className="text-xs text-gray-400">{formatSize(file.size)}</p>
+                <p className="text-xs text-gray-500">{formatSize(file.size)}</p>
               </div>
             </div>
 
             {/* Caption */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label className="mb-1.5 block text-sm font-medium text-gray-300">
                 Legenda
               </label>
               <textarea
@@ -258,9 +314,9 @@ export default function UploadPage() {
                 maxLength={300}
                 rows={3}
                 disabled={uploading}
-                className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-500/20 disabled:opacity-50"
+                className="w-full resize-none rounded-xl border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-white placeholder-gray-500 transition-colors focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50"
               />
-              <p className="mt-1 text-right text-xs text-gray-400">
+              <p className="mt-1 text-right text-xs text-gray-500">
                 {caption.length}/300
               </p>
             </div>
@@ -269,12 +325,14 @@ export default function UploadPage() {
             {uploading && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Enviando...</span>
-                  <span className="font-medium text-pink-500">{progress}%</span>
+                  <span className="text-gray-400">
+                    {progress < 80 ? "Enviando video..." : progress < 100 ? "Finalizando..." : "Concluido!"}
+                  </span>
+                  <span className="font-medium text-purple-500">{progress}%</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+                <div className="h-2 overflow-hidden rounded-full bg-gray-800">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-pink-500 to-rose-500 transition-all duration-300"
+                    className="h-full rounded-full bg-gradient-to-r from-purple-400 to-purple-600 transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -285,7 +343,7 @@ export default function UploadPage() {
             <button
               onClick={handleUpload}
               disabled={uploading}
-              className="w-full rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 py-3.5 text-base font-bold text-white shadow-lg shadow-pink-500/30 transition-all hover:shadow-xl hover:shadow-pink-500/40 active:scale-[0.98] disabled:opacity-60 disabled:shadow-none"
+              className="w-full rounded-xl bg-gradient-to-r from-purple-400 to-purple-600 py-3.5 text-base font-bold text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 active:scale-[0.98] disabled:opacity-60 disabled:shadow-none"
             >
               {uploading ? "Publicando..." : "Publicar"}
             </button>

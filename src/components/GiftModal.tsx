@@ -60,14 +60,14 @@ export default function GiftModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
-      <div className="bg-white rounded-t-3xl w-full max-w-lg p-6 pb-10 shadow-xl animate-slide-up">
+      <div className="bg-gray-900 border border-gray-800 rounded-t-3xl w-full max-w-lg p-6 pb-10 shadow-xl animate-slide-up">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-800">
+          <h3 className="text-lg font-bold text-white">
             Enviar Presente para {receiverName}
           </h3>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-gray-400 hover:text-white transition"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -89,24 +89,24 @@ export default function GiftModal({
         {giftSent ? (
           <div className="text-center py-8">
             <div className="text-5xl mb-3">🎉</div>
-            <p className="text-lg font-semibold text-gray-800">
+            <p className="text-lg font-semibold text-white">
               {giftSent} enviado com sucesso!
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto">
             {GIFT_TYPES.map((gift) => (
               <button
                 key={gift.type}
                 onClick={() => handleSendGift(gift)}
                 disabled={sendingGift}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-gray-100 hover:border-pink-300 hover:bg-pink-50 transition disabled:opacity-50"
+                className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-gray-700 hover:border-purple-500 hover:bg-gray-800 transition disabled:opacity-50"
               >
                 <span className="text-3xl">{gift.emoji}</span>
-                <span className="text-xs font-semibold text-gray-700">
+                <span className="text-xs font-semibold text-gray-300">
                   {gift.label}
                 </span>
-                <span className="text-xs text-pink-500 font-bold flex items-center gap-0.5">
+                <span className="text-xs text-purple-500 font-bold flex items-center gap-0.5">
                   🪙 {gift.value}
                 </span>
               </button>

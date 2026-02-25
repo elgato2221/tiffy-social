@@ -23,7 +23,7 @@ export default function Input({
           className="mb-1.5 block text-sm font-medium text-gray-700"
         >
           {label}
-          {required && <span className="ml-0.5 text-pink-500">*</span>}
+          {required && <span className="ml-0.5 text-purple-500">*</span>}
         </label>
       )}
 
@@ -35,7 +35,7 @@ export default function Input({
           w-full rounded-xl border px-4 py-3 text-sm text-gray-900
           placeholder:text-gray-400
           transition-all duration-200 ease-in-out
-          focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500
+          focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500
           ${error ? "border-red-500 ring-1 ring-red-500" : "border-gray-300"}
           ${className}
         `}

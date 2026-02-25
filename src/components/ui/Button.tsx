@@ -12,7 +12,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<Variant, string> = {
   primary:
-    "bg-pink-500 hover:bg-pink-600 text-white shadow-md hover:shadow-lg",
+    "bg-purple-500 hover:bg-purple-600 text-white shadow-md hover:shadow-lg",
   secondary:
     "bg-gray-200 hover:bg-gray-300 text-gray-800",
   ghost:
@@ -31,7 +31,7 @@ export default function Button({
       className={`
         rounded-full px-6 py-3 font-semibold text-sm
         transition-all duration-200 ease-in-out
-        focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2
+        focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2
         disabled:opacity-50 disabled:cursor-not-allowed
         ${variantStyles[variant]}
         ${className}

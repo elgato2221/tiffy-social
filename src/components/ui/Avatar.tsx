@@ -49,7 +49,7 @@ export default function Avatar({
         <div
           className={`
             flex items-center justify-center rounded-full
-            bg-gradient-to-br from-pink-400 to-rose-500
+            bg-gradient-to-br from-purple-400 to-purple-500
             text-white font-semibold select-none
             ${styles.container} ${styles.text}
           `}
@@ -62,7 +62,7 @@ export default function Avatar({
         <span
           className={`
             absolute bottom-0 right-0 rounded-full
-            bg-green-500 border-white
+            bg-purple-500 border-white
             ${styles.dot}
           `}
         />
