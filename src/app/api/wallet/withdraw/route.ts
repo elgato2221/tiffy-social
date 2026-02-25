@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validation = validateBody(withdrawalSchema, body);
     if (!validation.success) return validation.response;
-    const { amount, pixKey } = validation.data;
+    const { amount, withdrawMethod, pixKey, paypalEmail } = validation.data;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -97,7 +97,9 @@ export async function POST(req: NextRequest) {
         data: {
           userId,
           amount,
-          pixKey,
+          withdrawMethod,
+          pixKey: pixKey || null,
+          paypalEmail: paypalEmail || null,
         },
       });
 

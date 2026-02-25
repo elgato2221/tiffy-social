@@ -85,8 +85,17 @@ export const purchaseCoinsSchema = z.object({
 // Withdrawal
 export const withdrawalSchema = z.object({
   amount: z.number().int().min(100, "Minimo 100 moedas para saque"),
-  pixKey: z.string().min(5, "Chave PIX invalida").max(100),
-});
+  withdrawMethod: z.enum(["PIX", "PAYPAL"]),
+  pixKey: z.string().min(5, "Chave PIX invalida").max(100).optional(),
+  paypalEmail: z.string().email("Email PayPal invalido").optional(),
+}).refine(
+  (data) => {
+    if (data.withdrawMethod === "PIX") return !!data.pixKey;
+    if (data.withdrawMethod === "PAYPAL") return !!data.paypalEmail;
+    return false;
+  },
+  { message: "Informe os dados do metodo de saque escolhido" }
+);
 
 // User profile update
 export const updateProfileSchema = z.object({

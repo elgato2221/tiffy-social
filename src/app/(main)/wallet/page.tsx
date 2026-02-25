@@ -22,7 +22,9 @@ interface WalletData {
 interface WithdrawalRequest {
   id: string;
   amount: number;
-  pixKey: string;
+  withdrawMethod: string;
+  pixKey?: string;
+  paypalEmail?: string;
   status: string;
   createdAt: string;
 }
@@ -157,7 +159,9 @@ function WalletPage() {
 
   // Withdrawal states
   const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawMethod, setWithdrawMethod] = useState<"PIX" | "PAYPAL">("PIX");
   const [pixKey, setPixKey] = useState("");
+  const [paypalEmail, setPaypalEmail] = useState("");
   const [withdrawing, setWithdrawing] = useState(false);
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
@@ -286,8 +290,12 @@ function WalletPage() {
       setWithdrawError("Saque minimo: 5.000 moedas");
       return;
     }
-    if (!pixKey.trim()) {
+    if (withdrawMethod === "PIX" && !pixKey.trim()) {
       setWithdrawError("Informe sua chave Pix");
+      return;
+    }
+    if (withdrawMethod === "PAYPAL" && !paypalEmail.trim()) {
+      setWithdrawError("Informe seu email do PayPal");
       return;
     }
 
@@ -297,7 +305,12 @@ function WalletPage() {
       const res = await fetch("/api/wallet/withdraw", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, pixKey: pixKey.trim() }),
+        body: JSON.stringify({
+          amount,
+          withdrawMethod,
+          pixKey: withdrawMethod === "PIX" ? pixKey.trim() : undefined,
+          paypalEmail: withdrawMethod === "PAYPAL" ? paypalEmail.trim() : undefined,
+        }),
       });
 
       if (res.ok) {
@@ -305,6 +318,7 @@ function WalletPage() {
         setWithdrawSuccess(true);
         setWithdrawAmount("");
         setPixKey("");
+        setPaypalEmail("");
         setWithdrawals((prev) => [data, ...prev]);
         setWallet((prev) =>
           prev ? { ...prev, balance: prev.balance - amount } : prev
@@ -556,18 +570,72 @@ function WalletPage() {
                 className="w-full mt-1.5 px-4 py-3 bg-gray-800/80 rounded-xl border border-gray-700/50 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 transition-all"
               />
             </div>
+
+            {/* Withdraw method selector */}
             <div>
-              <label className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-                Chave Pix
+              <label className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-2 block">
+                Metodo de saque
               </label>
-              <input
-                type="text"
-                value={pixKey}
-                onChange={(e) => setPixKey(e.target.value)}
-                placeholder="CPF, e-mail, telefone ou chave aleatoria"
-                className="w-full mt-1.5 px-4 py-3 bg-gray-800/80 rounded-xl border border-gray-700/50 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 transition-all"
-              />
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setWithdrawMethod("PIX")}
+                  className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    withdrawMethod === "PIX"
+                      ? "bg-gradient-to-br from-green-500/20 to-green-500/10 text-green-400 border-2 border-green-500 shadow-lg shadow-green-500/10"
+                      : "bg-gray-800/80 text-gray-400 border-2 border-gray-700/50 hover:border-gray-600"
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 512 512" fill="currentColor">
+                    <path d="M346.3 271.8l-60.1-60.1c-4.6-4.6-12.1-4.6-16.8 0l-60.1 60.1c-4.6 4.6-4.6 12.1 0 16.8l60.1 60.1c4.6 4.6 12.1 4.6 16.8 0l60.1-60.1c4.6-4.6 4.6-12.1 0-16.8zm91.2-91.2l-60.1-60.1c-4.6-4.6-12.1-4.6-16.8 0L256 225.1 151.4 120.5c-4.6-4.6-12.1-4.6-16.8 0l-60.1 60.1c-4.6 4.6-4.6 12.1 0 16.8L179.1 302l-104.6 104.6c-4.6 4.6-4.6 12.1 0 16.8l60.1 60.1c4.6 4.6 12.1 4.6 16.8 0L256 378.9l104.6 104.6c4.6 4.6 12.1 4.6 16.8 0l60.1-60.1c4.6-4.6 4.6-12.1 0-16.8L332.9 302l104.6-104.6c4.6-4.6 4.6-12.1 0-16.8z" />
+                  </svg>
+                  PIX
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWithdrawMethod("PAYPAL")}
+                  className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    withdrawMethod === "PAYPAL"
+                      ? "bg-gradient-to-br from-blue-500/20 to-blue-500/10 text-blue-400 border-2 border-blue-500 shadow-lg shadow-blue-500/10"
+                      : "bg-gray-800/80 text-gray-400 border-2 border-gray-700/50 hover:border-gray-600"
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.932.932 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z" />
+                  </svg>
+                  PayPal
+                </button>
+              </div>
             </div>
+
+            {/* Dynamic field based on method */}
+            {withdrawMethod === "PIX" ? (
+              <div>
+                <label className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+                  Chave Pix
+                </label>
+                <input
+                  type="text"
+                  value={pixKey}
+                  onChange={(e) => setPixKey(e.target.value)}
+                  placeholder="CPF, e-mail, telefone ou chave aleatoria"
+                  className="w-full mt-1.5 px-4 py-3 bg-gray-800/80 rounded-xl border border-gray-700/50 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 transition-all"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+                  Email do PayPal
+                </label>
+                <input
+                  type="email"
+                  value={paypalEmail}
+                  onChange={(e) => setPaypalEmail(e.target.value)}
+                  placeholder="seuemail@exemplo.com"
+                  className="w-full mt-1.5 px-4 py-3 bg-gray-800/80 rounded-xl border border-gray-700/50 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 transition-all"
+                />
+              </div>
+            )}
 
             {withdrawError && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
@@ -604,6 +672,11 @@ function WalletPage() {
                     <div>
                       <span className="font-medium text-gray-300">
                         {w.amount.toLocaleString("pt-BR")} moedas
+                      </span>
+                      <span className={`text-[10px] ml-2 px-1.5 py-0.5 rounded-full font-semibold ${
+                        w.withdrawMethod === "PAYPAL" ? "bg-blue-500/15 text-blue-400" : "bg-green-500/15 text-green-400"
+                      }`}>
+                        {w.withdrawMethod === "PAYPAL" ? "PayPal" : "PIX"}
                       </span>
                       <span className="text-xs text-gray-500 ml-2">
                         {timeAgo(w.createdAt)}
