@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { sendGiftSchema } from "@/lib/validations";
 import { validateBody } from "@/lib/api-utils";
-import { giftTypeToEmoji } from "@/lib/utils";
+import { giftTypeToEmoji, PLATFORM_FEE } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,6 +38,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Platform takes 35% fee
+    const receiverAmount = Math.floor(value * (1 - PLATFORM_FEE));
+
     const result = await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: userId },
@@ -46,7 +49,7 @@ export async function POST(req: NextRequest) {
 
       await tx.user.update({
         where: { id: receiverId },
-        data: { coins: { increment: value } },
+        data: { coins: { increment: receiverAmount } },
       });
 
       const gift = await tx.gift.create({
@@ -93,7 +96,7 @@ export async function POST(req: NextRequest) {
         data: {
           userId: receiverId,
           type: "GIFT_RECEIVED",
-          amount: value,
+          amount: receiverAmount,
           description: `Received ${type} gift`,
         },
       });

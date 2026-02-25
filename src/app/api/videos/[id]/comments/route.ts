@@ -107,7 +107,7 @@ export async function POST(
       );
     }
 
-    // Platform takes 30% fee
+    // Platform takes 35% fee
     const ownerAmount = Math.floor(COMMENT_COST * (1 - PLATFORM_FEE));
 
     const result = await prisma.$transaction(async (tx) => {

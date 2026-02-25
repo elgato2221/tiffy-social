@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Platform takes 30% fee, receiver gets 70%
+    // Platform takes 35% fee, receiver gets 65%
     const receiverAmount = cost > 0 ? Math.floor(cost * (1 - PLATFORM_FEE)) : 0;
 
     const result = await prisma.$transaction(async (tx) => {

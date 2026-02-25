@@ -17,7 +17,7 @@ export function timeAgo(date: Date | string): string {
 export const COMMENT_COST = 10;
 export const MESSAGE_COST = 5;
 export const AUDIO_COST = 25;
-export const PLATFORM_FEE = 0.3; // 30% fee - receiver gets 70%
+export const PLATFORM_FEE = 0.35; // 35% fee - receiver gets 65%
 export const MIN_MESSAGE_COST = 5;
 export const MAX_MESSAGE_COST = 100;
 

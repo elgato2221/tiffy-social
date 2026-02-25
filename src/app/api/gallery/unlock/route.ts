@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { unlockGallerySchema } from "@/lib/validations";
 import { validateBody } from "@/lib/api-utils";
+import { PLATFORM_FEE } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -65,6 +66,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Platform takes 35% fee
+    const ownerAmount = Math.floor(item.price * (1 - PLATFORM_FEE));
+
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: userId },
@@ -73,7 +77,7 @@ export async function POST(req: NextRequest) {
 
       await tx.user.update({
         where: { id: item.userId },
-        data: { coins: { increment: item.price } },
+        data: { coins: { increment: ownerAmount } },
       });
 
       await tx.galleryUnlock.create({
@@ -96,7 +100,7 @@ export async function POST(req: NextRequest) {
         data: {
           userId: item.userId,
           type: "GALLERY_EARNING",
-          amount: item.price,
+          amount: ownerAmount,
           description: `Gallery item unlocked by a user`,
         },
       });

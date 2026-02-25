@@ -371,7 +371,7 @@ function WalletPage() {
       <div className="sticky top-0 z-30 bg-black/70 backdrop-blur-xl border-b border-gray-800/50 px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
-            <span className="text-xs font-extrabold text-amber-900">C</span>
+            <span className="text-xs font-extrabold text-amber-900">T</span>
           </div>
           <h1 className="text-xl font-bold text-white">Carteira</h1>
         </div>
@@ -516,7 +516,7 @@ function WalletPage() {
                       : "bg-gray-800 group-hover:bg-gray-700"
                   }`}
                 >
-                  <span className="text-xl font-extrabold text-amber-900">C</span>
+                  <span className="text-xl font-extrabold text-amber-900">T</span>
                 </div>
                 <div className="text-left">
                   <p className="font-bold text-white">
