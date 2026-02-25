@@ -8,8 +8,8 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-black">
-      <div className="flex">
+    <div className="min-h-screen bg-black overflow-x-hidden">
+      <div className="flex w-full">
         {/* Left sidebar - desktop only */}
         <LeftSidebar />
 

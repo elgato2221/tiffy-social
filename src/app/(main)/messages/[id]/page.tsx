@@ -486,7 +486,7 @@ export default function ChatPage() {
   const otherInitial = otherUser?.name?.charAt(0)?.toUpperCase() || "?";
 
   return (
-    <div className="bg-black h-screen flex flex-col">
+    <div className="bg-black h-screen flex flex-col overflow-x-hidden w-full max-w-full">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex items-center gap-3">
         <button
@@ -528,7 +528,7 @@ export default function ChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 w-full min-w-0">
         {messages.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-sm">
@@ -560,14 +560,14 @@ export default function ChatPage() {
 
       {/* Emoji Picker */}
       {showEmojis && (
-        <div className="flex-shrink-0 px-4 pb-2">
-          <div className="mx-auto max-w-lg bg-gray-900 border border-gray-700 rounded-2xl shadow-lg p-3">
+        <div className="flex-shrink-0 px-3 pb-2 w-full min-w-0">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-lg p-3">
             <div className="grid grid-cols-8 gap-1">
               {EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
                   onClick={() => insertEmoji(emoji)}
-                  className="w-9 h-9 flex items-center justify-center text-xl hover:bg-gray-800 rounded-lg transition"
+                  className="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-800 rounded-lg transition"
                 >
                   {emoji}
                 </button>
@@ -579,8 +579,8 @@ export default function ChatPage() {
 
       {/* Audio Preview (after recording) */}
       {audioBlob && !recording && (
-        <div className="flex-shrink-0 px-4 pb-2">
-          <div className="mx-auto max-w-lg bg-gray-900 border border-gray-700 rounded-2xl shadow-lg p-3">
+        <div className="flex-shrink-0 px-3 pb-2 w-full min-w-0">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-lg p-3">
             <div className="flex items-center gap-3">
               <audio
                 src={URL.createObjectURL(audioBlob)}
@@ -619,8 +619,8 @@ export default function ChatPage() {
       )}
 
       {/* Input Bar */}
-      <div className="flex-shrink-0 bg-black border-t border-gray-800 px-4 py-3 pb-20 lg:pb-3">
-        <div className="mx-auto max-w-lg">
+      <div className="flex-shrink-0 bg-black border-t border-gray-800 px-3 py-2 pb-20 lg:pb-3 w-full min-w-0">
+        <div className="w-full max-w-lg mx-auto min-w-0">
           {/* Cost indicator */}
           {messageCost > 0 && !recording && !audioBlob && !showMediaPicker && (
             <div className="flex items-center gap-1 mb-2 px-1">
@@ -640,9 +640,9 @@ export default function ChatPage() {
 
           {/* Media Preview */}
           {showMediaPicker && mediaFile && (
-            <div className="mb-3 bg-gray-900 border border-gray-700 rounded-2xl p-3">
-              <div className="flex items-start gap-3">
-                <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
+            <div className="mb-3 bg-gray-900 border border-gray-700 rounded-2xl p-3 w-full min-w-0">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
                   {mediaFile.type.startsWith("video/") ? (
                     <video src={mediaPreview!} className="w-full h-full object-cover" muted playsInline />
                   ) : (
@@ -699,27 +699,27 @@ export default function ChatPage() {
 
           {/* Recording UI */}
           {recording ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 w-full min-w-0">
               <button
                 onClick={cancelRecording}
-                className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 transition flex-shrink-0"
+                className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 transition flex-shrink-0"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                   <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
                 </svg>
               </button>
-              <div className="flex-1 flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-gray-300">
-                  Gravando {formatRecordingTime(recordingTime)}
+              <div className="flex-1 min-w-0 flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-300 flex-shrink-0">
+                  {formatRecordingTime(recordingTime)}
                 </span>
-                <div className="flex-1 flex items-center gap-0.5">
-                  {Array.from({ length: 20 }).map((_, i) => (
+                <div className="flex-1 min-w-0 flex items-center gap-0.5">
+                  {Array.from({ length: 16 }).map((_, i) => (
                     <div
                       key={i}
                       className="flex-1 bg-purple-400 rounded-full animate-pulse"
                       style={{
-                        height: `${Math.random() * 20 + 4}px`,
+                        height: `${Math.random() * 16 + 4}px`,
                         animationDelay: `${i * 0.05}s`,
                       }}
                     />
@@ -728,7 +728,7 @@ export default function ChatPage() {
               </div>
               <button
                 onClick={stopRecording}
-                className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white hover:bg-purple-600 transition flex-shrink-0"
+                className="w-9 h-9 rounded-full bg-red-500 flex items-center justify-center text-white hover:bg-red-600 transition flex-shrink-0"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                   <path fillRule="evenodd" d="M4.5 7.5a3 3 0 013-3h9a3 3 0 013 3v9a3 3 0 01-3 3h-9a3 3 0 01-3-3v-9z" clipRule="evenodd" />
@@ -736,16 +736,16 @@ export default function ChatPage() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSend} className="flex items-center gap-2">
+            <form onSubmit={handleSend} className="flex items-center gap-1.5 w-full min-w-0">
               {/* Emoji button */}
               <button
                 type="button"
                 onClick={() => setShowEmojis(!showEmojis)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition flex-shrink-0 ${
-                  showEmojis ? "bg-purple-500/20 text-purple-400" : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition flex-shrink-0 ${
+                  showEmojis ? "bg-purple-500/20 text-purple-400" : "text-gray-400 hover:text-gray-200"
                 }`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
                 </svg>
               </button>
@@ -754,9 +754,9 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => mediaInputRef.current?.click()}
-                className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-800 text-gray-400 hover:bg-gray-700 transition flex-shrink-0"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-200 transition flex-shrink-0"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
                 </svg>
@@ -766,8 +766,8 @@ export default function ChatPage() {
                 type="text"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Digite sua mensagem..."
-                className="flex-1 px-4 py-2.5 bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-white placeholder-gray-500"
+                placeholder="Mensagem..."
+                className="flex-1 min-w-0 px-4 py-2 bg-gray-800 border border-gray-700 rounded-full focus:outline-none focus:border-gray-600 text-sm text-white placeholder-gray-500"
                 onFocus={() => setShowEmojis(false)}
               />
 
@@ -775,13 +775,13 @@ export default function ChatPage() {
                 <button
                   type="submit"
                   disabled={sending}
-                  className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white hover:bg-purple-600 transition disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                  className="w-9 h-9 flex items-center justify-center text-purple-400 font-semibold hover:text-purple-300 transition disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
                 >
                   {sending ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
                     </svg>
                   )}
                 </button>
@@ -789,9 +789,9 @@ export default function ChatPage() {
                 <button
                   type="button"
                   onClick={startRecording}
-                  className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white hover:bg-purple-600 transition flex-shrink-0"
+                  className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-200 transition flex-shrink-0"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8.25 4.5a3.75 3.75 0 117.5 0v8.25a3.75 3.75 0 11-7.5 0V4.5z" />
                     <path d="M6 10.5a.75.75 0 01.75.75v1.5a5.25 5.25 0 1010.5 0v-1.5a.75.75 0 011.5 0v1.5a6.751 6.751 0 01-6 6.709v2.291h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.291a6.751 6.751 0 01-6-6.709v-1.5A.75.75 0 016 10.5z" />
                   </svg>

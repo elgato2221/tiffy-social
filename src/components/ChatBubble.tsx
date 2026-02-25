@@ -45,7 +45,7 @@ export default function ChatBubble({
   // Gift message
   if (type === "gift") {
     return (
-      <div className="flex justify-center mb-3">
+      <div className="flex justify-center mb-3 w-full min-w-0">
         <div className="bg-gray-800/60 border border-gray-700/50 rounded-2xl px-6 py-3 text-center">
           <span className="text-4xl block mb-1">{giftEmoji || "\uD83C\uDF81"}</span>
           <p className="text-xs font-semibold text-gray-300">
@@ -66,8 +66,8 @@ export default function ChatBubble({
   // Locked media message
   if (type === "locked_media") {
     return (
-      <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-3`}>
-        <div className={`max-w-[75%] rounded-2xl overflow-hidden ${isMine ? "rounded-br-md" : "rounded-bl-md"}`}>
+      <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-3 w-full min-w-0`}>
+        <div className={`max-w-[75%] min-w-0 rounded-2xl overflow-hidden ${isMine ? "rounded-br-md" : "rounded-bl-md"}`}>
           {mediaUnlocked && mediaUrl ? (
             <div className="relative">
               {mediaType === "video" ? (
@@ -120,14 +120,14 @@ export default function ChatBubble({
 
   // Text / Audio message
   return (
-    <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-3`}>
+    <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-3 w-full min-w-0`}>
       <div
-        className={`max-w-[75%] px-4 py-2.5 rounded-2xl ${
+        className={`max-w-[75%] min-w-0 px-3 py-2 rounded-2xl ${
           isMine ? "bg-purple-500 text-white rounded-br-md" : "bg-gray-800 text-gray-100 rounded-bl-md"
         }`}
       >
         {type === "audio" ? (
-          <div className="flex items-center gap-3 min-w-[180px]">
+          <div className="flex items-center gap-2 min-w-[140px] max-w-full">
             <audio
               ref={audioRef} src={content} preload="metadata"
               onLoadedMetadata={() => { if (audioRef.current) setDuration(audioRef.current.duration); }}
@@ -158,7 +158,7 @@ export default function ChatBubble({
             </div>
           </div>
         ) : (
-          <p className="text-sm leading-relaxed break-words">{content}</p>
+          <p className="text-sm leading-relaxed break-words overflow-hidden" style={{ overflowWrap: "anywhere" }}>{content}</p>
         )}
         <div className={`flex items-center gap-1.5 mt-1 ${isMine ? "justify-end" : "justify-start"}`}>
           <span className={`text-[10px] ${isMine ? "text-purple-100" : "text-gray-400"}`}>{time}</span>
