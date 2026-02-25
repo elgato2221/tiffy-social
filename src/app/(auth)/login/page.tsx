@@ -112,7 +112,7 @@ function LoginContent() {
               Tiffy Social
             </h1>
             <p className="text-gray-400 mt-2 text-sm">
-              Conecte-se e compartilhe momentos especiais
+              Uma rede social para solteiros que monetiza usuarios
             </p>
           </div>
 
@@ -158,7 +158,7 @@ function LoginContent() {
                 <div>
                   <h3 className="text-lg font-bold text-white">Criar Conta Publica</h3>
                   <p className="text-sm text-gray-400 mt-0.5">
-                    Crie seu perfil, publique e seja descoberto
+                    Crie seu perfil, publique e monetize
                   </p>
                 </div>
               </div>

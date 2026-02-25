@@ -108,7 +108,7 @@ export default function RegisterPage() {
             Tiffy Social
           </h1>
           <p className="text-gray-400 mt-2 text-sm">
-            Crie sua conta publica
+            Crie seu perfil, publique e monetize
           </p>
         </div>
 
