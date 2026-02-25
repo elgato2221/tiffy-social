@@ -14,6 +14,10 @@ interface NavItem {
 export default function Navbar() {
   const pathname = usePathname();
 
+  // Hide navbar inside individual chat pages (like Instagram)
+  const isChatPage = pathname?.match(/^\/messages\/[^/]+$/);
+  if (isChatPage) return null;
+
   const navItems: NavItem[] = [
     {
       label: "Inicio",

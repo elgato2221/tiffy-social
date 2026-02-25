@@ -481,7 +481,7 @@ export default function ChatPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
         <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -490,12 +490,12 @@ export default function ChatPage() {
   const otherInitial = otherUser?.name?.charAt(0)?.toUpperCase() || "?";
 
   return (
-    <div className="bg-black h-[100dvh] flex flex-col overflow-hidden w-full max-w-full">
+    <div className="fixed inset-0 bg-black flex flex-col w-full z-50">
       {/* Header */}
-      <div className="flex-shrink-0 z-30 bg-black border-b border-gray-800 px-4 py-3 flex items-center gap-3">
+      <div className="flex-shrink-0 bg-black border-b border-gray-800 px-4 py-2.5 flex items-center gap-3 safe-top">
         <button
           onClick={() => router.push("/messages")}
-          className="text-gray-400 hover:text-white transition"
+          className="text-gray-400 hover:text-white transition p-1"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -507,15 +507,15 @@ export default function ChatPage() {
             <img
               src={otherUser.avatar}
               alt={otherUser.name}
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-9 h-9 rounded-full object-cover"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center">
               <span className="text-sm font-bold text-white">{otherInitial}</span>
             </div>
           )}
           {otherUser?.online && (
-            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-purple-400 rounded-full border-2 border-black" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 bg-purple-400 rounded-full border-2 border-black" />
           )}
         </div>
 
@@ -524,42 +524,44 @@ export default function ChatPage() {
             {otherUser?.name || "Usuario"}
           </h2>
           {otherUser?.online ? (
-            <p className="text-xs text-purple-500">Online</p>
+            <p className="text-[11px] text-purple-500">Online</p>
           ) : (
-            <p className="text-xs text-gray-400">Offline</p>
+            <p className="text-[11px] text-gray-500">Offline</p>
           )}
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 w-full min-w-0">
-        {messages.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-sm">
-              Nenhuma mensagem ainda. Diga ola!
-            </p>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <ChatBubble
-              key={msg.id}
-              content={msg.content}
-              type={msg.type}
-              isMine={msg.senderId === myId}
-              time={timeAgo(msg.createdAt)}
-              cost={msg.cost}
-              giftEmoji={msg.giftEmoji}
-              giftValue={msg.giftValue}
-              mediaUrl={msg.mediaUrl}
-              mediaType={msg.mediaType}
-              mediaPrice={msg.mediaPrice}
-              mediaUnlocked={msg.mediaUnlocked}
-              onUnlockMedia={msg.type === "locked_media" && !msg.mediaUnlocked && msg.senderId !== myId ? () => handleUnlockMedia(msg.id) : undefined}
-              unlocking={unlockingMessageId === msg.id}
-            />
-          ))
-        )}
-        <div ref={messagesEndRef} />
+      {/* Messages - flex-end so messages stick to bottom */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2 w-full min-w-0 flex flex-col justify-end">
+        <div>
+          {messages.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-sm">
+                Nenhuma mensagem ainda. Diga ola!
+              </p>
+            </div>
+          ) : (
+            messages.map((msg) => (
+              <ChatBubble
+                key={msg.id}
+                content={msg.content}
+                type={msg.type}
+                isMine={msg.senderId === myId}
+                time={timeAgo(msg.createdAt)}
+                cost={msg.cost}
+                giftEmoji={msg.giftEmoji}
+                giftValue={msg.giftValue}
+                mediaUrl={msg.mediaUrl}
+                mediaType={msg.mediaType}
+                mediaPrice={msg.mediaPrice}
+                mediaUnlocked={msg.mediaUnlocked}
+                onUnlockMedia={msg.type === "locked_media" && !msg.mediaUnlocked && msg.senderId !== myId ? () => handleUnlockMedia(msg.id) : undefined}
+                unlocking={unlockingMessageId === msg.id}
+              />
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Emoji Picker */}
@@ -623,7 +625,7 @@ export default function ChatPage() {
       )}
 
       {/* Input Bar */}
-      <div className="flex-shrink-0 bg-black border-t border-gray-800 px-3 py-2 pb-[env(safe-area-inset-bottom)] w-full min-w-0">
+      <div className="flex-shrink-0 bg-black border-t border-gray-800 px-3 pt-2 pb-3 w-full min-w-0 safe-bottom">
         <div className="w-full max-w-lg mx-auto min-w-0">
           {/* Cost indicator */}
           {messageCost > 0 && !recording && !audioBlob && !showMediaPicker && (

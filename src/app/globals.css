@@ -83,3 +83,11 @@ body {
 .animate-slide-up {
   animation: slideUp 0.3s ease-out;
 }
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
