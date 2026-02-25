@@ -75,7 +75,7 @@ function NotificationIcon({ type }: { type: string }) {
       );
     default:
       return (
-        <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
           </svg>
@@ -126,37 +126,37 @@ export default function NotificationsPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="bg-black min-h-screen pb-20">
+    <div className="bg-white min-h-screen pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-gray-800 px-6 py-4">
-        <h1 className="text-xl font-bold text-white">Notificacoes</h1>
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
+        <h1 className="text-xl font-bold text-gray-900">Notificacoes</h1>
       </div>
 
       {/* Notifications List */}
       {notifications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 px-6">
-          <div className="w-20 h-20 rounded-full bg-gray-900 flex items-center justify-center mb-4">
+          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
             </svg>
           </div>
-          <p className="text-gray-400 font-medium">Nenhuma notificacao</p>
+          <p className="text-gray-500 font-medium">Nenhuma notificacao</p>
           <p className="text-gray-500 text-sm mt-1">Suas notificacoes aparecerao aqui</p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-800">
+        <div className="divide-y divide-gray-200">
           {notifications.map((notification) => (
             <div
               key={notification.id}
               className={`flex items-center gap-3 px-6 py-4 transition ${
-                !notification.read ? "bg-purple-500/10" : "hover:bg-gray-900"
+                !notification.read ? "bg-purple-500/10" : "hover:bg-gray-50"
               }`}
             >
               {/* Icon */}
@@ -164,8 +164,8 @@ export default function NotificationsPage() {
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-300">
-                  <span className="font-semibold text-white">{notification.fromName || "Alguem"}</span>{" "}
+                <p className="text-sm text-gray-600">
+                  <span className="font-semibold text-gray-900">{notification.fromName || "Alguem"}</span>{" "}
                   {getNotificationAction(notification.type)}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">

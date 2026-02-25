@@ -17,9 +17,17 @@ export default function InstallPWA() {
     // Check if already installed
     if (window.matchMedia("(display-mode: standalone)").matches) return;
 
-    // Check if dismissed recently
+    // Only show on mobile devices
+    const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (!isMobile) return;
+
+    // Check if dismissed - show max 1x per day
     const dismissed = localStorage.getItem("pwa-dismissed");
-    if (dismissed && Date.now() - parseInt(dismissed) < 3 * 24 * 60 * 60 * 1000) return;
+    if (dismissed && Date.now() - parseInt(dismissed) < 24 * 60 * 60 * 1000) return;
+
+    // Only show once per session
+    if (sessionStorage.getItem("pwa-shown")) return;
 
     // Detect iOS
     const ua = navigator.userAgent;
@@ -30,7 +38,7 @@ export default function InstallPWA() {
       // On iOS, show banner after a short delay (no beforeinstallprompt event)
       const isInStandalone = ("standalone" in navigator) && (navigator as unknown as { standalone: boolean }).standalone;
       if (!isInStandalone) {
-        setTimeout(() => setShowBanner(true), 3000);
+        setTimeout(() => { setShowBanner(true); sessionStorage.setItem("pwa-shown", "1"); }, 3000);
       }
       return;
     }
@@ -39,7 +47,7 @@ export default function InstallPWA() {
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setTimeout(() => setShowBanner(true), 2000);
+      setTimeout(() => { setShowBanner(true); sessionStorage.setItem("pwa-shown", "1"); }, 2000);
     };
 
     window.addEventListener("beforeinstallprompt", handler);

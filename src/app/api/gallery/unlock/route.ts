@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { unlockGallerySchema } from "@/lib/validations";
 import { validateBody } from "@/lib/api-utils";
 import { PLATFORM_FEE } from "@/lib/utils";
+import { getHeldUntilForSender } from "@/lib/held-coins";
 
 export async function POST(req: NextRequest) {
   try {
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
 
     // Platform takes 35% fee
     const ownerAmount = Math.floor(item.price * (1 - PLATFORM_FEE));
+    const earningHeldUntil = await getHeldUntilForSender(userId);
 
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
@@ -102,6 +104,7 @@ export async function POST(req: NextRequest) {
           type: "GALLERY_EARNING",
           amount: ownerAmount,
           description: `Gallery item unlocked by a user`,
+          heldUntil: earningHeldUntil,
         },
       });
     });

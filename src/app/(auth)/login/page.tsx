@@ -8,7 +8,7 @@ import Link from "next/link";
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     }>
@@ -105,19 +105,19 @@ function LoginContent() {
   // Choice screen
   if (mode === "choice") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black px-4 w-full max-w-full overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-white px-4 w-full max-w-full overflow-hidden">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-extrabold text-white tracking-tight">
+            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
               Tiffy Social
             </h1>
-            <p className="text-gray-400 mt-2 text-sm">
+            <p className="text-gray-500 mt-2 text-sm">
               Uma rede social para solteiros que monetiza usuarios
             </p>
           </div>
 
           {error && (
-            <div className="bg-red-900/30 border border-red-800 text-red-400 text-sm rounded-lg p-3 mb-4 text-center">
+            <div className="bg-red-50 border border-red-200 text-red-500 text-sm rounded-lg p-3 mb-4 text-center">
               {error}
             </div>
           )}
@@ -127,17 +127,17 @@ function LoginContent() {
             <button
               onClick={handleAnonymous}
               disabled={loading}
-              className="w-full rounded-2xl bg-gray-900 border border-gray-800 p-6 text-left transition hover:border-gray-600 hover:bg-gray-800/80 disabled:opacity-50"
+              className="w-full rounded-2xl bg-gray-50 border border-gray-200 p-6 text-left transition hover:border-gray-400 hover:bg-gray-100 disabled:opacity-50"
             >
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-800">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Perfil Anonimo</h3>
-                  <p className="text-sm text-gray-400 mt-0.5">
+                  <h3 className="text-lg font-bold text-gray-900">Perfil Anonimo</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
                     Navegue, curta e comente sem revelar sua identidade
                   </p>
                 </div>
@@ -156,8 +156,8 @@ function LoginContent() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Criar Conta Publica</h3>
-                  <p className="text-sm text-gray-400 mt-0.5">
+                  <h3 className="text-lg font-bold text-gray-900">Criar Conta Publica</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
                     Crie seu perfil, publique e monetize
                   </p>
                 </div>
@@ -169,7 +169,7 @@ function LoginContent() {
           <div className="mt-8 text-center">
             <button
               onClick={() => setMode("login")}
-              className="text-sm text-gray-400 hover:text-purple-400 transition"
+              className="text-sm text-gray-500 hover:text-purple-400 transition"
             >
               Ja tem uma conta? <span className="font-semibold text-purple-500">Entrar</span>
             </button>
@@ -181,37 +181,37 @@ function LoginContent() {
 
   // Login form
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-white tracking-tight">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
             Tiffy Social
           </h1>
-          <p className="text-gray-400 mt-2 text-sm">
+          <p className="text-gray-500 mt-2 text-sm">
             Bem-vindo de volta
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-white text-center mb-6">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
             Entrar
           </h2>
 
           {success && (
-            <div className="bg-green-900/30 border border-green-800 text-green-400 text-sm rounded-lg p-3 mb-4 text-center">
+            <div className="bg-green-50 border border-green-200 text-green-600 text-sm rounded-lg p-3 mb-4 text-center">
               {success}
             </div>
           )}
 
           {error && (
-            <div className="bg-red-900/30 border border-red-800 text-red-400 text-sm rounded-lg p-3 mb-4 text-center">
+            <div className="bg-red-50 border border-red-200 text-red-500 text-sm rounded-lg p-3 mb-4 text-center">
               {error}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-1">
                 Email
               </label>
               <input
@@ -221,12 +221,12 @@ function LoginContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-1">
                 Senha
               </label>
               <input
@@ -236,7 +236,7 @@ function LoginContent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Digite sua senha"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
               />
             </div>
 
@@ -252,7 +252,7 @@ function LoginContent() {
           <div className="mt-4 text-center">
             <Link
               href="/forgot-password"
-              className="text-sm text-gray-400 hover:text-purple-400 transition"
+              className="text-sm text-gray-500 hover:text-purple-400 transition"
             >
               Esqueceu a senha?
             </Link>
@@ -261,7 +261,7 @@ function LoginContent() {
           <div className="mt-6 text-center">
             <button
               onClick={() => setMode("choice")}
-              className="text-sm text-gray-400 hover:text-white transition"
+              className="text-sm text-gray-500 hover:text-gray-900 transition"
             >
               Voltar
             </button>

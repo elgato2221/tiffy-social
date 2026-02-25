@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { sendGiftSchema } from "@/lib/validations";
 import { validateBody } from "@/lib/api-utils";
 import { giftTypeToEmoji, PLATFORM_FEE } from "@/lib/utils";
+import { getHeldUntilForSender } from "@/lib/held-coins";
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
 
     // Platform takes 35% fee
     const receiverAmount = Math.floor(value * (1 - PLATFORM_FEE));
+    const earningHeldUntil = await getHeldUntilForSender(userId);
 
     const result = await prisma.$transaction(async (tx) => {
       await tx.user.update({
@@ -98,6 +100,7 @@ export async function POST(req: NextRequest) {
           type: "GIFT_RECEIVED",
           amount: receiverAmount,
           description: `Received ${type} gift`,
+          heldUntil: earningHeldUntil,
         },
       });
 

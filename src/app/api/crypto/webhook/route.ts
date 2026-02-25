@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
           type: "PURCHASE",
           amount: coinAmount,
           description: `Compra crypto: ${coinAmount} moedas (${order_id})`,
+          heldUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         },
       });
     });

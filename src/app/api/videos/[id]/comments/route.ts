@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { COMMENT_COST, PLATFORM_FEE } from "@/lib/utils";
 import { createCommentSchema } from "@/lib/validations";
 import { validateBody } from "@/lib/api-utils";
+import { getHeldUntilForSender } from "@/lib/held-coins";
 
 export async function GET(
   req: NextRequest,
@@ -109,6 +110,7 @@ export async function POST(
 
     // Platform takes 35% fee
     const ownerAmount = Math.floor(COMMENT_COST * (1 - PLATFORM_FEE));
+    const earningHeldUntil = !isVideoOwner ? await getHeldUntilForSender(userId) : null;
 
     const result = await prisma.$transaction(async (tx) => {
       if (!isVideoOwner) {
@@ -141,6 +143,7 @@ export async function POST(
             type: "COMMENT_RECEIVED",
             amount: ownerAmount,
             description: "Recebeu comentário em seu vídeo",
+            heldUntil: earningHeldUntil,
           },
         });
       }

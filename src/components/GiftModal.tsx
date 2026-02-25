@@ -61,14 +61,14 @@ export default function GiftModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
-      <div className="bg-gray-900 border border-gray-800 rounded-t-3xl w-full max-w-lg p-6 pb-10 shadow-xl animate-slide-up">
+      <div className="bg-white border border-gray-200 rounded-t-3xl w-full max-w-lg p-6 pb-10 shadow-xl animate-slide-up">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-white">
+          <h3 className="text-lg font-bold text-gray-900">
             Enviar Presente para {receiverName}
           </h3>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-white transition"
+            className="text-gray-500 hover:text-gray-900 transition"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +90,7 @@ export default function GiftModal({
         {giftSent ? (
           <div className="text-center py-8">
             <div className="text-5xl mb-3">🎉</div>
-            <p className="text-lg font-semibold text-white">
+            <p className="text-lg font-semibold text-gray-900">
               {giftSent} enviado com sucesso!
             </p>
           </div>
@@ -101,10 +101,10 @@ export default function GiftModal({
                 key={gift.type}
                 onClick={() => handleSendGift(gift)}
                 disabled={sendingGift}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-gray-700 hover:border-purple-500 hover:bg-gray-800 transition disabled:opacity-50"
+                className="flex flex-col items-center gap-2 p-4 rounded-2xl border-2 border-gray-300 hover:border-purple-500 hover:bg-gray-100 transition disabled:opacity-50"
               >
                 <span className="text-3xl">{gift.emoji}</span>
-                <span className="text-xs font-semibold text-gray-300">
+                <span className="text-xs font-semibold text-gray-600">
                   {gift.label}
                 </span>
                 <span className="text-xs text-purple-500 font-bold flex items-center gap-1">

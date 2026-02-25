@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface NavItem {
   label: string;
@@ -13,6 +14,8 @@ interface NavItem {
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "ADMIN";
 
   // Hide navbar inside individual chat pages (like Instagram)
   const isChatPage = pathname?.match(/^\/messages\/[^/]+$/);
@@ -68,7 +71,19 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-800 bg-black shadow-[0_-2px_10px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom)]">
+    <>
+    {/* Floating Admin button */}
+    {isAdmin && pathname !== "/admin" && (
+      <Link
+        href="/admin"
+        className="fixed bottom-20 right-3 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-purple-600 shadow-lg shadow-purple-500/30 transition-transform hover:scale-105 active:scale-95"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+        </svg>
+      </Link>
+    )}
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex max-w-lg items-center justify-around py-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
@@ -90,7 +105,7 @@ export default function Navbar() {
               key={item.href}
               href={item.href}
               className={`relative flex flex-col items-center gap-0.5 px-3 py-1 transition-colors ${
-                isActive ? "text-purple-500" : "text-gray-400 hover:text-white"
+                isActive ? "text-purple-500" : "text-gray-400 hover:text-gray-900"
               }`}
             >
               {item.icon(isActive)}
@@ -105,5 +120,6 @@ export default function Navbar() {
         })}
       </div>
     </nav>
+    </>
   );
 }

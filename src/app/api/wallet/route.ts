@@ -56,6 +56,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Only admin can credit coins directly
+    if (session.user?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await req.json();
     const validation = validateBody(purchaseCoinsSchema, body);
     if (!validation.success) return validation.response;

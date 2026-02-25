@@ -77,20 +77,20 @@ export default function RegisterPage() {
 
   if (registered) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8 w-full max-w-full overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-white px-4 py-8 w-full max-w-full overflow-hidden">
         <div className="w-full max-w-md text-center">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl p-8">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
             <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Conta criada!</h2>
-            <p className="text-gray-400 text-sm mb-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Conta criada!</h2>
+            <p className="text-gray-500 text-sm mb-4">
               Enviamos um email de verificacao para <span className="text-purple-400 font-medium">{email}</span>.
               Verifique sua caixa de entrada para ativar sua conta completamente.
             </p>
-            <p className="text-gray-500 text-xs">Entrando automaticamente...</p>
+            <p className="text-gray-400 text-xs">Entrando automaticamente...</p>
             <div className="mt-4">
               <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto" />
             </div>
@@ -101,31 +101,31 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4 py-8 w-full max-w-full overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-8 w-full max-w-full overflow-hidden">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-white tracking-tight">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
             Tiffy Social
           </h1>
-          <p className="text-gray-400 mt-2 text-sm">
+          <p className="text-gray-500 mt-2 text-sm">
             Crie seu perfil, publique e monetize
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-white text-center mb-6">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
             Criar Conta
           </h2>
 
           {error && (
-            <div className="bg-red-900/30 border border-red-800 text-red-400 text-sm rounded-lg p-3 mb-4 text-center">
+            <div className="bg-red-50 border border-red-200 text-red-500 text-sm rounded-lg p-3 mb-4 text-center">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-1">
                 Email
               </label>
               <input
@@ -135,12 +135,12 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-1">
                 Senha
               </label>
               <input
@@ -150,7 +150,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Crie uma senha forte"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
               />
               {password.length > 0 && (
                 <div className="mt-2 grid grid-cols-2 gap-1">
@@ -174,7 +174,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
                 Genero
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -190,7 +190,7 @@ export default function RegisterPage() {
                     className={`py-3 px-2 rounded-xl text-sm font-semibold transition border ${
                       gender === opt.value
                         ? "bg-purple-500 border-purple-500 text-white"
-                        : "bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500"
+                        : "bg-gray-50 border-gray-300 text-gray-600 hover:border-gray-400"
                     }`}
                   >
                     {opt.label}
@@ -209,7 +209,7 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-500">
               Ja possui uma conta?{" "}
               <Link href="/login" className="text-purple-500 hover:text-purple-600 font-semibold transition">
                 Entrar

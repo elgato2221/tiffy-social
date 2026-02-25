@@ -111,16 +111,9 @@ export default function UploadPage() {
     setError(null);
 
     try {
-      // Step 1: Upload file locally
-      const formData = new FormData();
-      formData.append("file", file);
-      const uploadRes = await fetch("/api/local-upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!uploadRes.ok) throw new Error("Erro ao enviar arquivo");
-      const { url } = await uploadRes.json();
+      // Step 1: Upload file (Vercel Blob client upload, bypasses 4.5MB body limit)
+      const { uploadFile } = await import("@/lib/uploadFile");
+      const url = await uploadFile(file);
 
       setProgress(80);
 
@@ -160,10 +153,10 @@ export default function UploadPage() {
   // Upload success for feed posts (pending review)
   if (uploadSuccess) {
     return (
-      <div className="min-h-screen bg-black pb-24">
-        <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-gray-800">
+      <div className="min-h-screen bg-white pb-24">
+        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
           <div className="mx-auto max-w-lg px-4 py-4">
-            <h1 className="text-center text-lg font-bold text-white">Novo Video</h1>
+            <h1 className="text-center text-lg font-bold text-gray-900">Novo Video</h1>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-24 px-6">
@@ -172,8 +165,8 @@ export default function UploadPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-white">Video publicado!</h2>
-          <p className="text-gray-400 text-sm mt-2 text-center max-w-xs">
+          <h2 className="text-lg font-bold text-gray-900">Video publicado!</h2>
+          <p className="text-gray-500 text-sm mt-2 text-center max-w-xs">
             Ja esta no seu perfil! O video tambem foi enviado para analise do feed publico.
           </p>
           <div className="flex gap-3 mt-6">
@@ -187,7 +180,7 @@ export default function UploadPage() {
                 setUploading(false);
                 setAlsoSubmitToFeed(false);
               }}
-              className="px-6 py-2.5 bg-gray-800 text-white font-semibold rounded-xl transition hover:bg-gray-700"
+              className="px-6 py-2.5 bg-gray-100 text-gray-900 font-semibold rounded-xl transition hover:bg-gray-200"
             >
               Postar outro
             </button>
@@ -206,20 +199,20 @@ export default function UploadPage() {
   // Not verified - show block
   if (verified === false) {
     return (
-      <div className="min-h-screen bg-black pb-24">
-        <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-gray-800">
+      <div className="min-h-screen bg-white pb-24">
+        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
           <div className="mx-auto max-w-lg px-4 py-4">
-            <h1 className="text-center text-lg font-bold text-white">Novo Video</h1>
+            <h1 className="text-center text-lg font-bold text-gray-900">Novo Video</h1>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-24 px-6">
-          <div className="w-20 h-20 rounded-full bg-gray-900 flex items-center justify-center mb-4">
+          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-white">Perfil nao verificado</h2>
-          <p className="text-gray-400 text-sm mt-2 text-center max-w-xs">
+          <h2 className="text-lg font-bold text-gray-900">Perfil nao verificado</h2>
+          <p className="text-gray-500 text-sm mt-2 text-center max-w-xs">
             Verifique seu perfil para publicar videos na plataforma.
           </p>
           <Link
@@ -234,11 +227,11 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black pb-24">
+    <div className="min-h-screen bg-white pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-gray-800">
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="mx-auto max-w-lg px-4 py-4">
-          <h1 className="text-center text-lg font-bold text-white">
+          <h1 className="text-center text-lg font-bold text-gray-900">
             Novo Video
           </h1>
         </div>
@@ -263,7 +256,7 @@ export default function UploadPage() {
             className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 transition-all ${
               dragActive
                 ? "border-purple-500 bg-purple-500/10"
-                : "border-gray-700 bg-gray-900 hover:border-purple-500 hover:bg-gray-800/50"
+                : "border-gray-300 bg-gray-50 hover:border-purple-500 hover:bg-gray-100"
             }`}
           >
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-400 to-purple-600">
@@ -282,7 +275,7 @@ export default function UploadPage() {
                 />
               </svg>
             </div>
-            <p className="mb-1 text-base font-semibold text-gray-300">
+            <p className="mb-1 text-base font-semibold text-gray-600">
               {dragActive ? "Solte o video aqui" : "Selecione um video"}
             </p>
             <p className="text-sm text-gray-500">
@@ -329,7 +322,7 @@ export default function UploadPage() {
             </div>
 
             {/* File info */}
-            <div className="flex items-center gap-3 rounded-xl bg-gray-900 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl bg-gray-50 px-4 py-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/20">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -347,7 +340,7 @@ export default function UploadPage() {
                 </svg>
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="truncate text-sm font-medium text-gray-300">
+                <p className="truncate text-sm font-medium text-gray-600">
                   {file.name}
                 </p>
                 <p className="text-xs text-gray-500">{formatSize(file.size)}</p>
@@ -356,7 +349,7 @@ export default function UploadPage() {
 
             {/* Caption */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-300">
+              <label className="mb-1.5 block text-sm font-medium text-gray-600">
                 Legenda
               </label>
               <textarea
@@ -366,7 +359,7 @@ export default function UploadPage() {
                 maxLength={300}
                 rows={3}
                 disabled={uploading}
-                className="w-full resize-none rounded-xl border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-white placeholder-gray-500 transition-colors focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50"
+                className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50"
               />
               <p className="mt-1 text-right text-xs text-gray-500">
                 {caption.length}/300
@@ -374,7 +367,7 @@ export default function UploadPage() {
             </div>
 
             {/* Feed submission toggle */}
-            <div className="rounded-xl bg-gray-900 border border-gray-700 px-4 py-3">
+            <div className="rounded-xl bg-gray-50 border border-gray-300 px-4 py-3">
               <button
                 type="button"
                 onClick={() => setAlsoSubmitToFeed(!alsoSubmitToFeed)}
@@ -382,7 +375,7 @@ export default function UploadPage() {
                 className="w-full flex items-center justify-between disabled:opacity-50"
               >
                 <div className="text-left">
-                  <p className="text-sm font-medium text-white">Enviar tambem pro Feed</p>
+                  <p className="text-sm font-medium text-gray-900">Enviar tambem pro Feed</p>
                   <p className="text-[11px] text-gray-500 mt-0.5">
                     {alsoSubmitToFeed
                       ? "Sera analisado antes de aparecer no feed publico"
@@ -390,7 +383,7 @@ export default function UploadPage() {
                   </p>
                 </div>
                 <div className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${
-                  alsoSubmitToFeed ? "bg-purple-500" : "bg-gray-700"
+                  alsoSubmitToFeed ? "bg-purple-500" : "bg-gray-300"
                 }`}>
                   <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${
                     alsoSubmitToFeed ? "translate-x-5" : "translate-x-0"
@@ -403,12 +396,12 @@ export default function UploadPage() {
             {uploading && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">
+                  <span className="text-gray-500">
                     {progress < 80 ? "Enviando video..." : progress < 100 ? "Finalizando..." : "Concluido!"}
                   </span>
                   <span className="font-medium text-purple-500">{progress}%</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-gray-800">
+                <div className="h-2 overflow-hidden rounded-full bg-gray-200">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-purple-400 to-purple-600 transition-all duration-300"
                     style={{ width: `${progress}%` }}

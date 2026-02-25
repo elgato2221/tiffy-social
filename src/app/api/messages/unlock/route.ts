@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { PLATFORM_FEE } from "@/lib/utils";
 import { unlockChatMediaSchema } from "@/lib/validations";
 import { validateBody } from "@/lib/api-utils";
+import { getHeldUntilForSender } from "@/lib/held-coins";
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
 
     const platformFee = Math.floor(message.mediaPrice * PLATFORM_FEE);
     const sellerAmount = message.mediaPrice - platformFee;
+    const earningHeldUntil = await getHeldUntilForSender(userId);
 
     await prisma.$transaction(async (tx) => {
       await tx.user.update({ where: { id: userId }, data: { coins: { decrement: message.mediaPrice! } } });
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest) {
         data: { userId, type: "MEDIA_UNLOCK", amount: -message.mediaPrice!, description: "Midia desbloqueada no chat" },
       });
       await tx.transaction.create({
-        data: { userId: message.senderId, type: "MEDIA_EARNING", amount: sellerAmount, description: "Ganho de midia no chat" },
+        data: { userId: message.senderId, type: "MEDIA_EARNING", amount: sellerAmount, description: "Ganho de midia no chat", heldUntil: earningHeldUntil },
       });
     });
 

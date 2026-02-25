@@ -55,16 +55,16 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black px-4 w-full max-w-full overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-white px-4 w-full max-w-full overflow-hidden">
         <div className="w-full max-w-md">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl p-8 text-center">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 text-center">
             <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Senha redefinida!</h2>
-            <p className="text-gray-400 text-sm mb-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Senha redefinida!</h2>
+            <p className="text-gray-500 text-sm mb-4">
               Sua senha foi alterada com sucesso. Voce sera redirecionado para o login...
             </p>
             <Link
@@ -80,27 +80,27 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4 w-full max-w-full overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4 w-full max-w-full overflow-hidden">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-white tracking-tight">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
             Tiffy Social
           </h1>
-          <p className="text-gray-400 mt-2 text-sm">
+          <p className="text-gray-500 mt-2 text-sm">
             Criar nova senha
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-white text-center mb-2">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
             Nova senha
           </h2>
-          <p className="text-gray-400 text-sm text-center mb-6">
+          <p className="text-gray-500 text-sm text-center mb-6">
             Digite sua nova senha abaixo.
           </p>
 
           {error && (
-            <div className="bg-red-900/30 border border-red-800 text-red-400 text-sm rounded-lg p-3 mb-4 text-center">
+            <div className="bg-red-50 border border-red-200 text-red-500 text-sm rounded-lg p-3 mb-4 text-center">
               {error}
             </div>
           )}
@@ -109,7 +109,7 @@ export default function ResetPasswordPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-600 mb-1"
               >
                 Nova senha
               </label>
@@ -120,14 +120,14 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimo 6 caracteres"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
               />
             </div>
 
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-300 mb-1"
+                className="block text-sm font-medium text-gray-600 mb-1"
               >
                 Confirmar senha
               </label>
@@ -138,7 +138,7 @@ export default function ResetPasswordPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Digite novamente"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
               />
             </div>
 
@@ -154,7 +154,7 @@ export default function ResetPasswordPage() {
           <div className="mt-6 text-center">
             <Link
               href="/login"
-              className="text-sm text-gray-400 hover:text-white transition"
+              className="text-sm text-gray-500 hover:text-gray-900 transition"
             >
               Voltar para o login
             </Link>

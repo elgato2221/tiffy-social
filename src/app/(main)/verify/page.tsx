@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 interface VerificationData {
   verified: boolean;
+  cooldownUntil: string | null;
   request: {
     id: string;
     selfieUrl: string;
@@ -148,16 +149,9 @@ export default function VerifyPage() {
         type: "image/jpeg",
       });
 
-      // Upload selfie locally
-      const formData = new FormData();
-      formData.append("file", file);
-      const uploadRes = await fetch("/api/local-upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!uploadRes.ok) throw new Error("Erro ao enviar arquivo");
-      const { url } = await uploadRes.json();
+      // Upload selfie
+      const { uploadFile } = await import("@/lib/uploadFile");
+      const url = await uploadFile(file);
 
       // Create verification request
       const res = await fetch("/api/verification", {
@@ -170,6 +164,7 @@ export default function VerifyPage() {
         const request = await res.json();
         setData({
           verified: false,
+          cooldownUntil: null,
           request: { ...request, reason: null },
         });
         setCapturedPhoto(null);
@@ -188,7 +183,7 @@ export default function VerifyPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -197,9 +192,9 @@ export default function VerifyPage() {
   // Already verified
   if (data?.verified) {
     return (
-      <div className="bg-black min-h-screen">
-        <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-gray-800 px-6 py-4">
-          <h1 className="text-xl font-bold text-white">Verificacao</h1>
+      <div className="bg-white min-h-screen">
+        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
+          <h1 className="text-xl font-bold text-gray-900">Verificacao</h1>
         </div>
         <div className="flex flex-col items-center justify-center py-24 px-6">
           <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
@@ -207,8 +202,8 @@ export default function VerifyPage() {
               <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-white">Perfil Verificado</h2>
-          <p className="text-gray-400 text-sm mt-2 text-center">
+          <h2 className="text-xl font-bold text-gray-900">Perfil Verificado</h2>
+          <p className="text-gray-500 text-sm mt-2 text-center">
             Seu perfil foi verificado com sucesso. Voce pode publicar videos e conteudo na galeria.
           </p>
           <button
@@ -225,9 +220,9 @@ export default function VerifyPage() {
   // Pending request
   if (data?.request?.status === "PENDING") {
     return (
-      <div className="bg-black min-h-screen">
-        <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-gray-800 px-6 py-4">
-          <h1 className="text-xl font-bold text-white">Verificacao</h1>
+      <div className="bg-white min-h-screen">
+        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
+          <h1 className="text-xl font-bold text-gray-900">Verificacao</h1>
         </div>
         <div className="flex flex-col items-center justify-center py-24 px-6">
           <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
@@ -235,13 +230,43 @@ export default function VerifyPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-white">Aguardando Analise</h2>
-          <p className="text-gray-400 text-sm mt-2 text-center max-w-xs">
+          <h2 className="text-xl font-bold text-gray-900">Aguardando Analise</h2>
+          <p className="text-gray-500 text-sm mt-2 text-center max-w-xs">
             Sua selfie foi enviada e esta sendo analisada. Voce sera notificado quando for aprovada.
           </p>
-          <div className="mt-6 rounded-2xl overflow-hidden border border-gray-800 max-w-xs">
+          <div className="mt-6 rounded-2xl overflow-hidden border border-gray-200 max-w-xs">
             <img src={data.request.selfieUrl} alt="Selfie enviada" className="w-full object-cover" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Cooldown active after rejection
+  if (data?.cooldownUntil && new Date(data.cooldownUntil) > new Date()) {
+    const remaining = Math.ceil(
+      (new Date(data.cooldownUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
+    return (
+      <div className="bg-white min-h-screen">
+        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
+          <h1 className="text-xl font-bold text-gray-900">Verificacao</h1>
+        </div>
+        <div className="flex flex-col items-center justify-center py-24 px-6">
+          <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Aguarde para tentar novamente</h2>
+          <p className="text-gray-500 text-sm mt-2 text-center max-w-xs">
+            Sua verificacao foi recusada. Voce podera enviar uma nova em <span className="text-red-400 font-bold">{remaining} dias</span>.
+          </p>
+          {data?.request?.reason && (
+            <p className="text-xs text-red-400/70 mt-3 text-center">
+              Motivo: {data.request.reason}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -251,9 +276,9 @@ export default function VerifyPage() {
   const isRejected = data?.request?.status === "REJECTED";
 
   return (
-    <div className="bg-black min-h-screen pb-24">
-      <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-gray-800 px-6 py-4">
-        <h1 className="text-xl font-bold text-white">Verificar Perfil</h1>
+    <div className="bg-white min-h-screen pb-24">
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
+        <h1 className="text-xl font-bold text-gray-900">Verificar Perfil</h1>
       </div>
 
       <div className="px-6 py-6 max-w-lg mx-auto">
@@ -291,7 +316,7 @@ export default function VerifyPage() {
         {!cameraActive && !capturedPhoto && (
           <button
             onClick={startCamera}
-            className="w-full flex flex-col items-center justify-center py-12 border-2 border-dashed border-gray-700 rounded-2xl hover:border-purple-500 hover:bg-gray-900/50 transition"
+            className="w-full flex flex-col items-center justify-center py-12 border-2 border-dashed border-gray-300 rounded-2xl hover:border-purple-500 hover:bg-gray-50 transition"
           >
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center mb-3">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -299,7 +324,7 @@ export default function VerifyPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
               </svg>
             </div>
-            <p className="text-sm font-semibold text-gray-300">Abrir camera</p>
+            <p className="text-sm font-semibold text-gray-600">Abrir camera</p>
             <p className="text-xs text-gray-500 mt-1">A selfie deve ser tirada na hora</p>
           </button>
         )}
@@ -314,7 +339,7 @@ export default function VerifyPage() {
         {/* Live camera view */}
         {cameraActive && (
           <div className="space-y-4">
-            <div className="relative rounded-2xl overflow-hidden border border-gray-800 bg-gray-900">
+            <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-100">
               <video
                 ref={videoRef}
                 autoPlay
@@ -332,7 +357,7 @@ export default function VerifyPage() {
             <div className="flex gap-3">
               <button
                 onClick={stopCamera}
-                className="flex-1 py-3 bg-gray-800 text-gray-300 font-semibold rounded-xl hover:bg-gray-700 transition"
+                className="flex-1 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition"
               >
                 Cancelar
               </button>
@@ -349,14 +374,14 @@ export default function VerifyPage() {
         {/* Captured photo preview */}
         {capturedPhoto && preview && (
           <div className="space-y-4">
-            <div className="relative rounded-2xl overflow-hidden border border-gray-800">
+            <div className="relative rounded-2xl overflow-hidden border border-gray-200">
               <img src={preview} alt="Selfie capturada" className="w-full object-cover" />
             </div>
 
             <div className="flex gap-3">
               <button
                 onClick={retakePhoto}
-                className="flex-1 py-3 bg-gray-800 text-gray-300 font-semibold rounded-xl hover:bg-gray-700 transition"
+                className="flex-1 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition"
               >
                 Tirar outra
               </button>

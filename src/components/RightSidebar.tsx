@@ -43,11 +43,11 @@ export default function RightSidebar() {
   const moreCreators = allUsers.filter((u) => !featuredCreators.find((f) => f.id === u.id)).slice(0, 4);
 
   return (
-    <aside className="hidden xl:flex flex-col w-80 h-screen sticky top-0 border-l border-gray-800/50 bg-black px-5 py-6 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <aside className="hidden xl:flex flex-col w-80 h-screen sticky top-0 border-l border-gray-200 bg-white px-5 py-6 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
       {/* Discover Header */}
       <div className="mb-5">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm4.28 10.28l-4 4a.75.75 0 01-1.06 0l-2-2a.75.75 0 111.06-1.06L12 15.19l3.47-3.47a.75.75 0 111.06 1.06h-.25z" />
           </svg>
@@ -66,7 +66,7 @@ export default function RightSidebar() {
                 <Link
                   key={creator.id}
                   href={`/profile/${creator.id}`}
-                  className="group relative overflow-hidden rounded-2xl bg-gray-900 transition hover:ring-2 hover:ring-purple-500/50"
+                  className="group relative overflow-hidden rounded-2xl bg-gray-100 transition hover:ring-2 hover:ring-purple-500/50"
                 >
                   {/* Avatar / Photo */}
                   <div className="aspect-[3/4] w-full overflow-hidden">
@@ -118,7 +118,7 @@ export default function RightSidebar() {
       {/* Online Now */}
       {onlineUsers.length > 0 && (
         <div className="mb-6">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
             <div className="h-2 w-2 rounded-full bg-purple-400 animate-pulse" />
             Online Agora
             <span className="text-xs font-normal text-gray-500">({onlineUsers.length})</span>
@@ -142,7 +142,7 @@ export default function RightSidebar() {
                       </div>
                     )}
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-purple-400 border-2 border-black" />
+                  <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-purple-400 border-2 border-white" />
                 </Link>
               );
             })}
@@ -153,7 +153,7 @@ export default function RightSidebar() {
       {/* More Creators - List */}
       {moreCreators.length > 0 && (
         <div className="mb-6">
-          <h3 className="mb-3 text-sm font-semibold text-white flex items-center gap-2">
+          <h3 className="mb-3 text-sm font-semibold text-gray-900 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
               <path d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 6.51 6.51 0 009 11.25a3 3 0 105.178-2.036 6.5 6.5 0 001.184-4z" />
             </svg>
@@ -166,7 +166,7 @@ export default function RightSidebar() {
                 <Link
                   key={user.id}
                   href={`/profile/${user.id}`}
-                  className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-gray-100"
                 >
                   <div className="relative flex-shrink-0">
                     <div className="h-10 w-10 rounded-full overflow-hidden">
@@ -179,12 +179,12 @@ export default function RightSidebar() {
                       )}
                     </div>
                     {user.online && (
-                      <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-purple-400 border-2 border-black" />
+                      <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-purple-400 border-2 border-white" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1">
-                      <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
                       {user.verified && (
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
                           <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />

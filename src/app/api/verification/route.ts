@@ -26,12 +26,23 @@ export async function GET() {
         status: true,
         reason: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
+
+    // Calculate cooldown if last request was rejected
+    let cooldownUntil: string | null = null;
+    if (lastRequest?.status === "REJECTED") {
+      const cooldownEnd = new Date(new Date(lastRequest.updatedAt).getTime() + 30 * 24 * 60 * 60 * 1000);
+      if (cooldownEnd > new Date()) {
+        cooldownUntil = cooldownEnd.toISOString();
+      }
+    }
 
     return NextResponse.json({
       verified: user?.verified || false,
       request: lastRequest,
+      cooldownUntil,
     });
   } catch (error) {
     console.error("Verification GET error:", error);
@@ -73,6 +84,24 @@ export async function POST(req: NextRequest) {
         { error: "Voce ja tem um pedido pendente. Aguarde a analise." },
         { status: 400 }
       );
+    }
+
+    // 30-day cooldown after rejection
+    const lastRejected = await prisma.verificationRequest.findFirst({
+      where: { userId, status: "REJECTED" },
+      orderBy: { updatedAt: "desc" },
+      select: { updatedAt: true },
+    });
+
+    if (lastRejected) {
+      const cooldownEnd = new Date(lastRejected.updatedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+      if (cooldownEnd > new Date()) {
+        const remainingDays = Math.ceil((cooldownEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        return NextResponse.json(
+          { error: `Aguarde ${remainingDays} dias para enviar nova verificacao.`, cooldownUntil: cooldownEnd.toISOString() },
+          { status: 429 }
+        );
+      }
     }
 
     const body = await req.json();

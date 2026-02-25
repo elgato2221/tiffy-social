@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { MESSAGE_COST, AUDIO_COST, PLATFORM_FEE } from "@/lib/utils";
 import { sendMessageSchema } from "@/lib/validations";
 import { validateBody } from "@/lib/api-utils";
+import { getHeldUntilForSender } from "@/lib/held-coins";
 
 export async function GET() {
   try {
@@ -144,6 +145,7 @@ export async function POST(req: NextRequest) {
 
     // Platform takes 35% fee, receiver gets 65%
     const receiverAmount = cost > 0 ? Math.floor(cost * (1 - PLATFORM_FEE)) : 0;
+    const earningHeldUntil = cost > 0 ? await getHeldUntilForSender(userId) : null;
 
     const result = await prisma.$transaction(async (tx) => {
       if (cost > 0) {
@@ -175,6 +177,7 @@ export async function POST(req: NextRequest) {
               type: "MESSAGE_RECEIVED",
               amount: receiverAmount,
               description: `Received message from user`,
+              heldUntil: earningHeldUntil,
             },
           });
         }

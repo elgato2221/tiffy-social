@@ -1,4 +1,4 @@
-const CACHE_NAME = "tiffy-v2";
+const CACHE_NAME = "tiffy-v3";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

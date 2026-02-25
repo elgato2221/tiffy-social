@@ -128,15 +128,8 @@ export default function MyGalleryPage() {
           // If resize fails, upload original
         }
       }
-      const formDataUpload = new FormData();
-      formDataUpload.append("file", fileToUpload);
-      const uploadRes = await fetch("/api/local-upload", {
-        method: "POST",
-        body: formDataUpload,
-      });
-
-      if (!uploadRes.ok) throw new Error("Erro ao enviar arquivo");
-      const { url } = await uploadRes.json();
+      const { uploadFile } = await import("@/lib/uploadFile");
+      const url = await uploadFile(fileToUpload);
 
       setUploadProgress(80);
 
@@ -183,17 +176,17 @@ export default function MyGalleryPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="bg-black min-h-screen">
+    <div className="bg-white min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">Minha Galeria</h1>
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-900">Minha Galeria</h1>
         {verified && (
           <button
             onClick={() => setShowModal(true)}
@@ -233,7 +226,7 @@ export default function MyGalleryPage() {
       <div className="px-4 py-6 pb-24">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-20 h-20 rounded-full bg-gray-900 flex items-center justify-center mb-4">
+            <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-10 w-10 text-gray-500"
@@ -249,7 +242,7 @@ export default function MyGalleryPage() {
                 />
               </svg>
             </div>
-            <p className="text-gray-400 font-medium">
+            <p className="text-gray-500 font-medium">
               Sua galeria esta vazia
             </p>
             <p className="text-gray-500 text-sm mt-1">
@@ -266,7 +259,7 @@ export default function MyGalleryPage() {
           <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
             {items.map((item) => (
               <div key={item.id} className="group relative">
-                <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-800">
+                <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-100">
                   {item.url ? (
                     item.type === "VIDEO" ? (
                       <video
@@ -285,7 +278,7 @@ export default function MyGalleryPage() {
                       />
                     )
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-8 w-8 text-gray-500"
@@ -329,7 +322,7 @@ export default function MyGalleryPage() {
                 </div>
 
                 {item.caption && (
-                  <p className="text-xs text-gray-400 mt-1.5 px-0.5 truncate">
+                  <p className="text-xs text-gray-500 mt-1.5 px-0.5 truncate">
                     {item.caption}
                   </p>
                 )}
@@ -342,9 +335,9 @@ export default function MyGalleryPage() {
       {/* Upload Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="bg-gray-900 rounded-2xl w-full max-w-md p-6 shadow-xl max-h-[90vh] overflow-y-auto border border-gray-800">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl max-h-[90vh] overflow-y-auto border border-gray-200">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-gray-900">
                 Novo Item da Galeria
               </h3>
               <button
@@ -352,7 +345,7 @@ export default function MyGalleryPage() {
                   setShowModal(false);
                   resetForm();
                 }}
-                className="text-gray-500 hover:text-gray-300 transition"
+                className="text-gray-400 hover:text-gray-600 transition"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -374,14 +367,14 @@ export default function MyGalleryPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* File Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Arquivo
                 </label>
                 {!formFile ? (
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-700 rounded-xl hover:border-purple-500 hover:bg-gray-800/50 transition"
+                    className="w-full flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-500 hover:bg-gray-100 transition"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -397,7 +390,7 @@ export default function MyGalleryPage() {
                         d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
                       />
                     </svg>
-                    <p className="text-sm font-medium text-gray-400">
+                    <p className="text-sm font-medium text-gray-500">
                       Selecionar foto ou video
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
@@ -405,7 +398,7 @@ export default function MyGalleryPage() {
                     </p>
                   </button>
                 ) : (
-                  <div className="relative rounded-xl overflow-hidden bg-gray-800">
+                  <div className="relative rounded-xl overflow-hidden bg-gray-100">
                     {formType === "VIDEO" ? (
                       <video
                         src={formPreview!}
@@ -451,7 +444,7 @@ export default function MyGalleryPage() {
               {/* Aspect Ratio (only for photos) */}
               {formType === "PHOTO" && formFile && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
                     Proporcao
                   </label>
                   <div className="flex gap-2">
@@ -461,7 +454,7 @@ export default function MyGalleryPage() {
                       className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition ${
                         formRatio === "4:5"
                           ? "bg-purple-500 text-white"
-                          : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                       }`}
                     >
                       4:5 Retrato
@@ -472,7 +465,7 @@ export default function MyGalleryPage() {
                       className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition ${
                         formRatio === "1:1"
                           ? "bg-purple-500 text-white"
-                          : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                       }`}
                     >
                       1:1 Quadrado
@@ -486,7 +479,7 @@ export default function MyGalleryPage() {
 
               {/* Price */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Preco (moedas)
                 </label>
                 <div className="relative">
@@ -500,16 +493,16 @@ export default function MyGalleryPage() {
                     min="1"
                     required
                     placeholder="10"
-                    className="w-full pl-12 pr-4 py-3 border border-gray-700 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500"
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
                   />
                 </div>
               </div>
 
               {/* Caption */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
                   Legenda
-                  <span className="text-gray-500 font-normal"> (opcional)</span>
+                  <span className="text-gray-400 font-normal"> (opcional)</span>
                 </label>
                 <textarea
                   value={formCaption}
@@ -517,7 +510,7 @@ export default function MyGalleryPage() {
                   rows={3}
                   maxLength={200}
                   placeholder="Descreva seu conteudo..."
-                  className="w-full px-4 py-3 border border-gray-700 bg-gray-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-white placeholder-gray-500 resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400 resize-none"
                 />
                 <p className="text-right text-xs text-gray-500 mt-1">
                   {formCaption.length}/200
@@ -536,7 +529,7 @@ export default function MyGalleryPage() {
                     <span className="text-gray-400">Enviando...</span>
                     <span className="text-purple-500 font-medium">{uploadProgress}%</span>
                   </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-gray-800">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-purple-400 to-purple-600 transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
@@ -554,7 +547,7 @@ export default function MyGalleryPage() {
                     resetForm();
                   }}
                   disabled={submitting}
-                  className="flex-1 py-2.5 border border-gray-700 text-gray-300 font-semibold rounded-xl hover:bg-gray-800 transition disabled:opacity-50"
+                  className="flex-1 py-2.5 border border-gray-300 text-gray-600 font-semibold rounded-xl hover:bg-gray-100 transition disabled:opacity-50"
                 >
                   Cancelar
                 </button>

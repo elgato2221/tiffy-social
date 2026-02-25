@@ -66,6 +66,9 @@ export default function ChatPage() {
   const [messageCost, setMessageCost] = useState<number>(5);
   const [isInitiator, setIsInitiator] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(0);
+  const userScrolledUpRef = useRef(false);
 
   // Audio recording state
   const [recording, setRecording] = useState(false);
@@ -90,8 +93,8 @@ export default function ChatPage() {
 
   const myId = session?.user?.id;
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = useCallback((instant?: boolean) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: instant ? "instant" : "smooth" });
   }, []);
 
   // Re-evaluate who is the initiator whenever messages change
@@ -166,9 +169,36 @@ export default function ChatPage() {
     init();
   }, [myId, otherUserId, status, router, fetchMessages]);
 
+  // Only auto-scroll when new messages arrive AND user hasn't scrolled up
   useEffect(() => {
-    scrollToBottom();
+    const newCount = messages.length;
+    const oldCount = prevMessageCountRef.current;
+    prevMessageCountRef.current = newCount;
+
+    // First load or new messages arrived
+    if (oldCount === 0 && newCount > 0) {
+      // Initial load - instant scroll to bottom
+      scrollToBottom(true);
+    } else if (newCount > oldCount && !userScrolledUpRef.current) {
+      // New message and user is near bottom - smooth scroll
+      scrollToBottom();
+    }
   }, [messages, scrollToBottom]);
+
+  // Track scroll position to detect if user scrolled up
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    function handleScroll() {
+      const el = container!;
+      const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      userScrolledUpRef.current = distFromBottom > 100;
+    }
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!otherUserId || status !== "authenticated") return;
@@ -214,6 +244,7 @@ export default function ChatPage() {
         setMessages((prev) => [...prev, newMessage]);
         setContent("");
         setShowEmojis(false);
+        userScrolledUpRef.current = false;
       } else {
         const data = await res.json();
         alert(data.error || "Erro ao enviar mensagem.");
@@ -294,15 +325,8 @@ export default function ChatPage() {
       const ext = audioBlob.type.includes("webm") ? "webm" : "mp4";
       const file = new File([audioBlob], `audio-${Date.now()}.${ext}`, { type: audioBlob.type });
 
-      const formData = new FormData();
-      formData.append("file", file);
-      const uploadRes = await fetch("/api/local-upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!uploadRes.ok) throw new Error("Erro ao enviar arquivo");
-      const { url } = await uploadRes.json();
+      const { uploadFile } = await import("@/lib/uploadFile");
+      const url = await uploadFile(file);
 
       const res = await fetch("/api/messages", {
         method: "POST",
@@ -319,6 +343,7 @@ export default function ChatPage() {
         setMessages((prev) => [...prev, newMessage]);
         setAudioBlob(null);
         setRecordingTime(0);
+        userScrolledUpRef.current = false;
       } else {
         const data = await res.json();
         alert(data.error || "Erro ao enviar audio.");
@@ -416,14 +441,8 @@ export default function ChatPage() {
       // Compress image if needed (Vercel has 4.5MB limit)
       const fileToUpload = await compressImage(mediaFile);
 
-      const formData = new FormData();
-      formData.append("file", fileToUpload);
-      const uploadRes = await fetch("/api/local-upload", { method: "POST", body: formData });
-      if (!uploadRes.ok) {
-        const errData = await uploadRes.json().catch(() => ({}));
-        throw new Error(errData.error || "Erro ao enviar arquivo");
-      }
-      const { url } = await uploadRes.json();
+      const { uploadFile } = await import("@/lib/uploadFile");
+      const url = await uploadFile(fileToUpload);
 
       const isVideo = mediaFile.type.startsWith("video/");
       const res = await fetch("/api/messages", {
@@ -442,6 +461,7 @@ export default function ChatPage() {
         const newMessage = await res.json();
         setMessages((prev) => [...prev, newMessage]);
         cancelMedia();
+        userScrolledUpRef.current = false;
       } else {
         const data = await res.json().catch(() => ({}));
         alert(data.error || "Erro ao enviar midia.");
@@ -481,7 +501,7 @@ export default function ChatPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
         <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -490,12 +510,12 @@ export default function ChatPage() {
   const otherInitial = otherUser?.name?.charAt(0)?.toUpperCase() || "?";
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col w-full z-50">
+    <div className="fixed inset-0 bg-gray-50 flex flex-col w-full z-50">
       {/* Header */}
-      <div className="flex-shrink-0 bg-black border-b border-gray-800 px-4 py-2.5 flex items-center gap-3 safe-top">
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-2.5 flex items-center gap-3 safe-top">
         <button
           onClick={() => router.push("/messages")}
-          className="text-gray-400 hover:text-white transition p-1"
+          className="text-gray-500 hover:text-gray-900 transition p-1"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -515,12 +535,12 @@ export default function ChatPage() {
             </div>
           )}
           {otherUser?.online && (
-            <div className="absolute bottom-0 right-0 w-2 h-2 bg-purple-400 rounded-full border-2 border-black" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 bg-purple-400 rounded-full border-2 border-white" />
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-semibold text-white truncate">
+          <h2 className="text-sm font-semibold text-gray-900 truncate">
             {otherUser?.name || "Usuario"}
           </h2>
           {otherUser?.online ? (
@@ -531,49 +551,52 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Messages - flex-end so messages stick to bottom */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2 w-full min-w-0 flex flex-col justify-end">
-        <div>
-          {messages.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">
-                Nenhuma mensagem ainda. Diga ola!
-              </p>
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <ChatBubble
-                key={msg.id}
-                content={msg.content}
-                type={msg.type}
-                isMine={msg.senderId === myId}
-                time={timeAgo(msg.createdAt)}
-                cost={msg.cost}
-                giftEmoji={msg.giftEmoji}
-                giftValue={msg.giftValue}
-                mediaUrl={msg.mediaUrl}
-                mediaType={msg.mediaType}
-                mediaPrice={msg.mediaPrice}
-                mediaUnlocked={msg.mediaUnlocked}
-                onUnlockMedia={msg.type === "locked_media" && !msg.mediaUnlocked && msg.senderId !== myId ? () => handleUnlockMedia(msg.id) : undefined}
-                unlocking={unlockingMessageId === msg.id}
-              />
-            ))
-          )}
-          <div ref={messagesEndRef} />
+      {/* Messages */}
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 w-full min-w-0">
+        {/* Spacer pushes messages to bottom when few messages */}
+        <div className="min-h-full flex flex-col justify-end">
+          <div className="py-2">
+            {messages.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-sm">
+                  Nenhuma mensagem ainda. Diga ola!
+                </p>
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <ChatBubble
+                  key={msg.id}
+                  content={msg.content}
+                  type={msg.type}
+                  isMine={msg.senderId === myId}
+                  time={timeAgo(msg.createdAt)}
+                  cost={msg.cost}
+                  giftEmoji={msg.giftEmoji}
+                  giftValue={msg.giftValue}
+                  mediaUrl={msg.mediaUrl}
+                  mediaType={msg.mediaType}
+                  mediaPrice={msg.mediaPrice}
+                  mediaUnlocked={msg.mediaUnlocked}
+                  onUnlockMedia={msg.type === "locked_media" && !msg.mediaUnlocked && msg.senderId !== myId ? () => handleUnlockMedia(msg.id) : undefined}
+                  unlocking={unlockingMessageId === msg.id}
+                />
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
       </div>
 
       {/* Emoji Picker */}
       {showEmojis && (
         <div className="flex-shrink-0 px-3 pb-2 w-full min-w-0">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-lg p-3">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-3">
             <div className="grid grid-cols-8 gap-1">
               {EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
                   onClick={() => insertEmoji(emoji)}
-                  className="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-800 rounded-lg transition"
+                  className="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-100 rounded-lg transition"
                 >
                   {emoji}
                 </button>
@@ -586,7 +609,7 @@ export default function ChatPage() {
       {/* Audio Preview (after recording) */}
       {audioBlob && !recording && (
         <div className="flex-shrink-0 px-3 pb-2 w-full min-w-0">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-lg p-3">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-3">
             <div className="flex items-center gap-3">
               <audio
                 src={URL.createObjectURL(audioBlob)}
@@ -595,7 +618,7 @@ export default function ChatPage() {
               />
               <button
                 onClick={cancelRecording}
-                className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 transition"
+                className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                   <path fillRule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 10-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z" clipRule="evenodd" />
@@ -625,7 +648,7 @@ export default function ChatPage() {
       )}
 
       {/* Input Bar */}
-      <div className="flex-shrink-0 bg-black border-t border-gray-800 px-3 pt-2 pb-3 w-full min-w-0 safe-bottom">
+      <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 pt-2 pb-3 w-full min-w-0 safe-bottom">
         <div className="w-full max-w-lg mx-auto min-w-0">
           {/* Cost indicator */}
           {messageCost > 0 && !recording && !audioBlob && !showMediaPicker && (
@@ -646,9 +669,9 @@ export default function ChatPage() {
 
           {/* Media Preview */}
           {showMediaPicker && mediaFile && (
-            <div className="mb-3 bg-gray-900 border border-gray-700 rounded-2xl p-3 w-full min-w-0">
+            <div className="mb-3 bg-white border border-gray-200 rounded-2xl p-3 w-full min-w-0">
               <div className="flex items-start gap-3 min-w-0">
-                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
+                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                   {mediaFile.type.startsWith("video/") ? (
                     <video src={mediaPreview!} className="w-full h-full object-cover" muted playsInline />
                   ) : (
@@ -656,7 +679,7 @@ export default function ChatPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-400 mb-2">Preco para desbloquear:</p>
+                  <p className="text-xs text-gray-500 mb-2">Preco para desbloquear:</p>
                   <div className="flex items-center gap-2">
                     <CoinIcon size="sm" />
                     <input
@@ -665,12 +688,12 @@ export default function ChatPage() {
                       onChange={(e) => setMediaPrice(e.target.value)}
                       min="1"
                       max="10000"
-                      className="w-24 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-24 px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                     <span className="text-xs text-gray-500">moedas</span>
                   </div>
                 </div>
-                <button onClick={cancelMedia} className="text-gray-500 hover:text-gray-300 flex-shrink-0">
+                <button onClick={cancelMedia} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -708,7 +731,7 @@ export default function ChatPage() {
             <div className="flex items-center gap-2 w-full min-w-0">
               <button
                 onClick={cancelRecording}
-                className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-gray-700 transition flex-shrink-0"
+                className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition flex-shrink-0"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                   <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clipRule="evenodd" />
@@ -716,7 +739,7 @@ export default function ChatPage() {
               </button>
               <div className="flex-1 min-w-0 flex items-center gap-2">
                 <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-300 flex-shrink-0">
+                <span className="text-sm font-medium text-gray-600 flex-shrink-0">
                   {formatRecordingTime(recordingTime)}
                 </span>
                 <div className="flex-1 min-w-0 flex items-center gap-0.5">
@@ -748,7 +771,7 @@ export default function ChatPage() {
                 type="button"
                 onClick={() => setShowEmojis(!showEmojis)}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition flex-shrink-0 ${
-                  showEmojis ? "bg-purple-500/20 text-purple-400" : "text-gray-400 hover:text-gray-200"
+                  showEmojis ? "bg-purple-500/20 text-purple-400" : "text-gray-500 hover:text-gray-700"
                 }`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -760,7 +783,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => mediaInputRef.current?.click()}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-200 transition flex-shrink-0"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-700 transition flex-shrink-0"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
@@ -773,7 +796,7 @@ export default function ChatPage() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Mensagem..."
-                className="flex-1 min-w-0 px-4 py-2 bg-gray-800 border border-gray-700 rounded-full focus:outline-none focus:border-gray-600 text-sm text-white placeholder-gray-500"
+                className="flex-1 min-w-0 px-4 py-2 bg-gray-100 border border-gray-300 rounded-full focus:outline-none focus:border-gray-400 text-sm text-gray-900 placeholder-gray-400"
                 onFocus={() => setShowEmojis(false)}
               />
 
@@ -795,7 +818,7 @@ export default function ChatPage() {
                 <button
                   type="button"
                   onClick={startRecording}
-                  className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-200 transition flex-shrink-0"
+                  className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-gray-700 transition flex-shrink-0"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8.25 4.5a3.75 3.75 0 117.5 0v8.25a3.75 3.75 0 11-7.5 0V4.5z" />
