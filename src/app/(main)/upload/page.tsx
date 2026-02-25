@@ -17,7 +17,7 @@ export default function UploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [verified, setVerified] = useState<boolean | null>(null);
-  const [destination, setDestination] = useState<"FEED" | "PROFILE">("FEED");
+  const [alsoSubmitToFeed, setAlsoSubmitToFeed] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
   useEffect(() => {
@@ -124,11 +124,11 @@ export default function UploadPage() {
 
       setProgress(80);
 
-      // Step 2: Create video record with the local URL
+      // Step 2: Create video record - always goes to PROFILE
       const res = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, caption, destination }),
+        body: JSON.stringify({ url, caption, destination: alsoSubmitToFeed ? "FEED" : "PROFILE" }),
       });
 
       if (!res.ok) {
@@ -138,7 +138,7 @@ export default function UploadPage() {
 
       setProgress(100);
 
-      if (destination === "FEED") {
+      if (alsoSubmitToFeed) {
         setUploadSuccess(true);
       } else {
         setTimeout(() => {
@@ -172,9 +172,9 @@ export default function UploadPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-white">Video enviado!</h2>
+          <h2 className="text-lg font-bold text-white">Video publicado!</h2>
           <p className="text-gray-400 text-sm mt-2 text-center max-w-xs">
-            Seu video foi enviado para analise. Ele aparecera no feed apos aprovacao.
+            Ja esta no seu perfil! O video tambem foi enviado para analise do feed publico.
           </p>
           <div className="flex gap-3 mt-6">
             <button
@@ -185,6 +185,7 @@ export default function UploadPage() {
                 setCaption("");
                 setProgress(0);
                 setUploading(false);
+                setAlsoSubmitToFeed(false);
               }}
               className="px-6 py-2.5 bg-gray-800 text-white font-semibold rounded-xl transition hover:bg-gray-700"
             >
@@ -372,47 +373,30 @@ export default function UploadPage() {
               </p>
             </div>
 
-            {/* Destination selector */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                Onde publicar
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setDestination("FEED")}
-                  disabled={uploading}
-                  className={`flex-1 py-3 rounded-xl text-sm font-semibold transition border ${
-                    destination === "FEED"
-                      ? "bg-purple-500/20 border-purple-500 text-purple-400"
-                      : "bg-gray-900 border-gray-700 text-gray-400 hover:border-gray-600"
-                  } disabled:opacity-50`}
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <span>Feed</span>
-                    <span className="text-[10px] text-gray-500 font-normal">
-                      Precisa aprovacao
-                    </span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDestination("PROFILE")}
-                  disabled={uploading}
-                  className={`flex-1 py-3 rounded-xl text-sm font-semibold transition border ${
-                    destination === "PROFILE"
-                      ? "bg-purple-500/20 border-purple-500 text-purple-400"
-                      : "bg-gray-900 border-gray-700 text-gray-400 hover:border-gray-600"
-                  } disabled:opacity-50`}
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <span>Meu Perfil</span>
-                    <span className="text-[10px] text-gray-500 font-normal">
-                      Visivel imediatamente
-                    </span>
-                  </div>
-                </button>
-              </div>
+            {/* Feed submission toggle */}
+            <div className="rounded-xl bg-gray-900 border border-gray-700 px-4 py-3">
+              <button
+                type="button"
+                onClick={() => setAlsoSubmitToFeed(!alsoSubmitToFeed)}
+                disabled={uploading}
+                className="w-full flex items-center justify-between disabled:opacity-50"
+              >
+                <div className="text-left">
+                  <p className="text-sm font-medium text-white">Enviar tambem pro Feed</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">
+                    {alsoSubmitToFeed
+                      ? "Sera analisado antes de aparecer no feed publico"
+                      : "O video ficara apenas no seu perfil"}
+                  </p>
+                </div>
+                <div className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${
+                  alsoSubmitToFeed ? "bg-purple-500" : "bg-gray-700"
+                }`}>
+                  <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                    alsoSubmitToFeed ? "translate-x-5" : "translate-x-0"
+                  }`} />
+                </div>
+              </button>
             </div>
 
             {/* Progress bar */}

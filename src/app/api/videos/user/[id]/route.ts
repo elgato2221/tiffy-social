@@ -12,10 +12,11 @@ export async function GET(
     const session = await getServerSession(authOptions);
     const isOwner = session?.user?.id === userId;
 
-    // Owner sees all their videos; visitors see only approved ones
+    // Owner sees all their videos
+    // Visitors see: all PROFILE posts + APPROVED feed posts
     const where = isOwner
       ? { userId }
-      : { userId, status: "APPROVED" };
+      : { userId, OR: [{ destination: "PROFILE" }, { status: "APPROVED" }] };
 
     const videos = await prisma.video.findMany({
       where,

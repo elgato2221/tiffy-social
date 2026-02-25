@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-// In-memory rate limiting for middleware
+// Per-endpoint rate limiting
 const ipRequests = new Map<string, { count: number; resetAt: number }>();
 
-function checkRateLimit(ip: string, limit: number, windowMs: number): boolean {
+function checkRateLimit(key: string, limit: number, windowMs: number): boolean {
   const now = Date.now();
-  const entry = ipRequests.get(ip);
+  const entry = ipRequests.get(key);
   if (!entry || now > entry.resetAt) {
-    ipRequests.set(ip, { count: 1, resetAt: now + windowMs });
+    ipRequests.set(key, { count: 1, resetAt: now + windowMs });
     return true;
   }
   if (entry.count >= limit) return false;
@@ -16,14 +16,14 @@ function checkRateLimit(ip: string, limit: number, windowMs: number): boolean {
   return true;
 }
 
-// Cleanup every 2 minutes
+// Cleanup every 5 minutes
 if (typeof setInterval !== "undefined") {
   setInterval(() => {
     const now = Date.now();
     for (const [key, entry] of ipRequests.entries()) {
       if (now > entry.resetAt) ipRequests.delete(key);
     }
-  }, 120_000);
+  }, 300_000);
 }
 
 export async function middleware(request: NextRequest) {
@@ -42,29 +42,39 @@ export async function middleware(request: NextRequest) {
       request.headers.get("x-real-ip") ||
       "unknown";
 
-    let limit = 60; // 60 req/min default
-    const window = 60_000;
+    const path = request.nextUrl.pathname;
+    const method = request.method;
 
-    // Skip rate limiting for payment webhooks
-    if (request.nextUrl.pathname === "/api/crypto/webhook" || request.nextUrl.pathname === "/api/mercadopago/webhook") {
-      limit = 200;
-    } else if (request.nextUrl.pathname === "/api/auth/callback/credentials") {
-      // Strict limit on actual login attempts (5/min)
-      limit = 5;
-    } else if (request.nextUrl.pathname.startsWith("/api/auth/")) {
-      limit = 10; // 10 req/min for other auth routes
-    } else if (
-      request.nextUrl.pathname === "/api/messages" &&
-      request.method === "POST"
-    ) {
-      limit = 30; // 30 messages/min
-    } else if (request.nextUrl.pathname === "/api/local-upload" || request.nextUrl.pathname === "/api/blob-upload") {
-      limit = 10; // 10 uploads/min
-    } else if (request.nextUrl.pathname === "/api/users" && request.method === "POST") {
-      limit = 3; // 3 registrations/min per IP
+    // Skip rate limiting for webhooks
+    if (path === "/api/crypto/webhook" || path === "/api/mercadopago/webhook") {
+      return response;
     }
 
-    if (!checkRateLimit(ip, limit, window)) {
+    // Per-endpoint limits (key = ip:category)
+    let limit = 300; // 300 req/min default (generous for polling)
+    let category = "general";
+    const window = 60_000;
+
+    if (path === "/api/auth/callback/credentials") {
+      limit = 5;
+      category = "login";
+    } else if (path.startsWith("/api/auth/")) {
+      limit = 15;
+      category = "auth";
+    } else if (path === "/api/messages" && method === "POST") {
+      limit = 60; // 60 messages/min (1 per second)
+      category = "msg-send";
+    } else if (path === "/api/local-upload" || path === "/api/blob-upload") {
+      limit = 15;
+      category = "upload";
+    } else if (path === "/api/users" && method === "POST") {
+      limit = 3;
+      category = "register";
+    }
+    // GET requests for messages/notifications/etc = default 300/min (polling)
+
+    const key = `${ip}:${category}`;
+    if (!checkRateLimit(key, limit, window)) {
       return NextResponse.json(
         { error: "Muitas requisicoes. Tente novamente em breve." },
         { status: 429 }

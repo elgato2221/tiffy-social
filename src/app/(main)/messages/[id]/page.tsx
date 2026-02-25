@@ -175,7 +175,7 @@ export default function ChatPage() {
 
     const interval = setInterval(() => {
       fetchMessages();
-    }, 2000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [otherUserId, status, fetchMessages]);
