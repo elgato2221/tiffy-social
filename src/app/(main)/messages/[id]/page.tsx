@@ -338,6 +338,47 @@ export default function ChatPage() {
 
   const audioCost = isInitiator ? AUDIO_COST : 0;
 
+  // Compress image to JPEG under 4MB for Vercel upload limit
+  async function compressImage(file: File): Promise<File> {
+    if (file.type.startsWith("video/")) return file;
+    if (file.size <= 3 * 1024 * 1024) return file; // Under 3MB, no compression needed
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+
+        // Scale down if too large
+        const MAX_DIM = 2048;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }));
+            } else {
+              resolve(file);
+            }
+          },
+          "image/jpeg",
+          0.85
+        );
+      };
+      img.onerror = () => resolve(file);
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
   function handleMediaSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -368,12 +409,19 @@ export default function ChatPage() {
     if (!mediaFile || sendingMedia) return;
     setSendingMedia(true);
     try {
+      // Compress image if needed (Vercel has 4.5MB limit)
+      const fileToUpload = await compressImage(mediaFile);
+
       const formData = new FormData();
-      formData.append("file", mediaFile);
+      formData.append("file", fileToUpload);
       const uploadRes = await fetch("/api/local-upload", { method: "POST", body: formData });
-      if (!uploadRes.ok) throw new Error("Erro ao enviar arquivo");
+      if (!uploadRes.ok) {
+        const errData = await uploadRes.json().catch(() => ({}));
+        throw new Error(errData.error || "Erro ao enviar arquivo");
+      }
       const { url } = await uploadRes.json();
 
+      const isVideo = mediaFile.type.startsWith("video/");
       const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -382,7 +430,7 @@ export default function ChatPage() {
           content: "Midia bloqueada",
           type: "locked_media",
           mediaUrl: url,
-          mediaType: mediaFile.type.startsWith("video/") ? "video" : "photo",
+          mediaType: isVideo ? "video" : "photo",
           mediaPrice: parseInt(mediaPrice) || 50,
         }),
       });
@@ -391,11 +439,11 @@ export default function ChatPage() {
         setMessages((prev) => [...prev, newMessage]);
         cancelMedia();
       } else {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         alert(data.error || "Erro ao enviar midia.");
       }
-    } catch {
-      alert("Erro ao enviar midia. Tente novamente.");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao enviar midia. Tente novamente.");
     } finally {
       setSendingMedia(false);
     }
@@ -644,7 +692,7 @@ export default function ChatPage() {
           <input
             ref={mediaInputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+            accept="image/*,video/mp4,video/webm"
             onChange={handleMediaSelect}
             className="hidden"
           />
