@@ -139,7 +139,9 @@ export default function UploadPage() {
         }, 500);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao fazer upload");
+      const msg = err instanceof Error ? err.message : "Erro ao fazer upload";
+      console.error("Upload error:", err);
+      setError(msg);
       setUploading(false);
       setProgress(0);
     }

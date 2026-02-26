@@ -3,10 +3,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 export async function POST(request: Request): Promise<Response> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // NOTE: Do NOT check session here at the top level.
+  // Vercel Blob sends TWO requests to this route:
+  //   1. "blob.generate-client-token" - from browser (has session cookies)
+  //   2. "blob.upload-completed" - from Vercel servers (NO session cookies)
+  // Auth is checked inside onBeforeGenerateToken instead.
 
   const body = (await request.json()) as HandleUploadBody;
 
@@ -15,6 +16,12 @@ export async function POST(request: Request): Promise<Response> {
       body,
       request,
       onBeforeGenerateToken: async () => {
+        // Auth check here - only runs for token generation (browser request)
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+          throw new Error("Nao autenticado");
+        }
+
         return {
           allowedContentTypes: [
             "video/mp4",
@@ -34,12 +41,13 @@ export async function POST(request: Request): Promise<Response> {
         };
       },
       onUploadCompleted: async () => {
-        // Not reliably called in all environments
+        // Called by Vercel servers after upload - no session available here
       },
     });
 
     return Response.json(jsonResponse);
   } catch (error) {
+    console.error("Blob upload error:", error);
     return Response.json(
       { error: (error as Error).message },
       { status: 400 }
