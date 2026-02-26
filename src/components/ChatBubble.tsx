@@ -67,32 +67,54 @@ export default function ChatBubble({
   if (type === "locked_media") {
     return (
       <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-3 w-full min-w-0`}>
-        <div className={`max-w-[75%] min-w-0 rounded-2xl overflow-hidden ${isMine ? "rounded-br-md" : "rounded-bl-md"}`}>
+        <div className={`max-w-[80%] min-w-[200px] rounded-2xl overflow-hidden ${isMine ? "rounded-br-md" : "rounded-bl-md"}`}>
           {mediaUnlocked && mediaUrl ? (
             <div className="relative">
               {mediaType === "video" ? (
-                <video src={mediaUrl} controls className="w-full max-h-[300px] rounded-2xl" playsInline />
+                <video src={mediaUrl} controls className="w-full rounded-2xl" playsInline crossOrigin="anonymous" />
               ) : (
-                <img src={mediaUrl} alt="Media" className="w-full max-h-[300px] object-cover rounded-2xl" />
+                <img src={mediaUrl} alt="Media" className="w-full object-cover rounded-2xl" />
               )}
               <div className={`px-3 py-1.5 ${isMine ? "bg-purple-500" : "bg-gray-100"}`}>
                 <span className={`text-[10px] ${isMine ? "text-purple-100" : "text-gray-500"}`}>{time}</span>
               </div>
             </div>
           ) : (
-            <div className={`${isMine ? "bg-purple-500/80" : "bg-gray-100"} p-4`}>
-              <div className="w-full h-40 bg-black/30 rounded-xl flex flex-col items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="relative aspect-[3/4] w-full">
+              {/* Blurred preview */}
+              {mediaUrl ? (
+                mediaType === "video" ? (
+                  <video
+                    src={`${mediaUrl}#t=0.1`}
+                    className="absolute inset-0 w-full h-full object-cover blur-xl scale-110"
+                    muted
+                    playsInline
+                    preload="auto"
+                    crossOrigin="anonymous"
+                  />
+                ) : (
+                  <img
+                    src={mediaUrl}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover blur-xl scale-110"
+                  />
+                )
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-200 to-purple-300" />
+              )}
+              {/* Lock overlay */}
+              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white drop-shadow-lg mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                 </svg>
-                <p className="text-xs text-gray-600 font-medium">
-                  {mediaType === "video" ? "Video bloqueado" : "Foto bloqueada"}
+                <p className="text-white text-sm font-semibold drop-shadow">
+                  {mediaType === "video" ? "Video privado" : "Foto privada"}
                 </p>
                 {!isMine && onUnlockMedia ? (
                   <button
                     onClick={onUnlockMedia}
                     disabled={unlocking}
-                    className="mt-2 px-4 py-1.5 bg-amber-500 text-white text-xs font-bold rounded-full hover:bg-amber-600 transition disabled:opacity-50 flex items-center gap-1.5"
+                    className="mt-3 px-5 py-2 bg-purple-500 text-white text-sm font-bold rounded-full hover:bg-purple-600 transition disabled:opacity-50 shadow-lg flex items-center gap-1.5"
                   >
                     {unlocking ? "..." : (
                       <>
@@ -102,14 +124,15 @@ export default function ChatBubble({
                     )}
                   </button>
                 ) : isMine ? (
-                  <div className="flex items-center gap-1 mt-2">
+                  <div className="flex items-center gap-1.5 mt-3 bg-black/30 px-3 py-1.5 rounded-full">
                     <CoinIcon size="xs" />
-                    <span className="text-[11px] text-gray-500">{mediaPrice} moedas</span>
+                    <span className="text-xs text-white font-medium">{mediaPrice} moedas</span>
                   </div>
                 ) : null}
               </div>
-              <div className="mt-1.5">
-                <span className={`text-[10px] ${isMine ? "text-purple-100" : "text-gray-500"}`}>{time}</span>
+              {/* Time */}
+              <div className="absolute bottom-2 right-2">
+                <span className="text-[10px] text-white/80 drop-shadow">{time}</span>
               </div>
             </div>
           )}
