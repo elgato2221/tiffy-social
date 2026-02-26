@@ -426,7 +426,8 @@ export default function UploadPage() {
         <input
           ref={fileInputRef}
           type="file"
-          accept="video/mp4,video/webm,video/quicktime"
+          accept="video/*"
+          capture="environment"
           onChange={handleInputChange}
           className="hidden"
         />
