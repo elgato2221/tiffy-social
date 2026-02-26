@@ -338,8 +338,8 @@ export default function VerifyPage() {
 
         {/* Live camera view */}
         {cameraActive && (
-          <div className="space-y-4">
-            <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-100" style={{ maxHeight: "55vh" }}>
+          <div>
+            <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-100" style={{ height: "calc(100dvh - 320px)" }}>
               <video
                 ref={videoRef}
                 autoPlay
@@ -352,21 +352,21 @@ export default function VerifyPage() {
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="w-48 h-48 border-2 border-white/30 rounded-full" />
               </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={stopCamera}
-                className="flex-1 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={takePhoto}
-                className="flex-1 py-3 bg-gradient-to-r from-purple-400 to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 transition hover:shadow-xl active:scale-[0.98]"
-              >
-                Tirar foto
-              </button>
+              {/* Capture button overlay - always visible on top of camera */}
+              <div className="absolute bottom-4 left-4 right-4 flex gap-3">
+                <button
+                  onClick={stopCamera}
+                  className="flex-1 py-3.5 bg-black/50 backdrop-blur-md text-white font-semibold rounded-xl transition active:scale-[0.98]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={takePhoto}
+                  className="flex-1 py-3.5 bg-gradient-to-r from-purple-400 to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 transition active:scale-[0.98]"
+                >
+                  📸 Tirar foto
+                </button>
+              </div>
             </div>
           </div>
         )}
