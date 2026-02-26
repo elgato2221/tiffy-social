@@ -68,6 +68,7 @@ export default function UserProfilePage() {
   const [unlocking, setUnlocking] = useState<string | null>(null);
   const [videos, setVideos] = useState<ProfileVideo[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<ProfileVideo | null>(null);
+  const [selectedGalleryItem, setSelectedGalleryItem] = useState<GalleryItem | null>(null);
 
   // Followers/Following modal
   const [showFollowModal, setShowFollowModal] = useState<"followers" | "following" | null>(null);
@@ -330,33 +331,38 @@ export default function UserProfilePage() {
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4 px-2">
             Galeria
           </h3>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             {gallery.map((item) => (
-              <div key={item.id} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
+              <div key={item.id} className="relative aspect-[4/5] rounded-xl overflow-hidden bg-gray-100">
                 {item.unlocked && item.url ? (
-                  item.type === "VIDEO" ? (
-                    <video src={`${item.url}#t=0.1`} className="w-full h-full object-cover" muted playsInline preload="auto" crossOrigin="anonymous" />
-                  ) : (
-                    <img src={item.url} alt={item.caption || ""} loading="lazy" className="w-full h-full object-cover" />
-                  )
+                  <button
+                    onClick={() => setSelectedGalleryItem(item)}
+                    className="w-full h-full"
+                  >
+                    {item.type === "VIDEO" ? (
+                      <video src={`${item.url}#t=0.1`} className="w-full h-full object-cover" muted playsInline preload="auto" crossOrigin="anonymous" />
+                    ) : (
+                      <img src={item.url} alt={item.caption || ""} loading="lazy" className="w-full h-full object-cover" />
+                    )}
+                  </button>
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-purple-100/90 to-purple-200/90 flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                     </svg>
-                    <p className="text-purple-500 text-[10px] font-medium mt-1">Conteudo exclusivo</p>
+                    <p className="text-purple-500 text-xs font-medium mt-2">Conteudo exclusivo</p>
                     <button
                       onClick={() => handleUnlock(item.id)}
                       disabled={unlocking === item.id}
-                      className="mt-2 px-3 py-1.5 bg-purple-500 text-white text-xs font-semibold rounded-full hover:bg-purple-600 transition disabled:opacity-50 shadow-lg"
+                      className="mt-3 px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-full hover:bg-purple-600 transition disabled:opacity-50 shadow-lg"
                     >
                       {unlocking === item.id ? "..." : <span className="flex items-center gap-1"><CoinIcon size="xs" /> {item.price}</span>}
                     </button>
                   </div>
                 )}
                 {item.unlocked && item.caption && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1">
-                    <p className="text-[10px] text-white truncate">{item.caption}</p>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1.5">
+                    <p className="text-xs text-white truncate">{item.caption}</p>
                   </div>
                 )}
               </div>
@@ -415,6 +421,45 @@ export default function UserProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Gallery Viewer Modal */}
+      {selectedGalleryItem && selectedGalleryItem.url && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4"
+          onClick={() => setSelectedGalleryItem(null)}
+        >
+          <button
+            onClick={() => setSelectedGalleryItem(null)}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition z-10"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+            {selectedGalleryItem.type === "VIDEO" ? (
+              <video
+                src={selectedGalleryItem.url}
+                controls
+                autoPlay
+                muted
+                playsInline
+                crossOrigin="anonymous"
+                className="w-full max-h-[80vh] object-contain rounded-2xl"
+              />
+            ) : (
+              <img
+                src={selectedGalleryItem.url}
+                alt={selectedGalleryItem.caption || ""}
+                className="w-full max-h-[80vh] object-contain rounded-2xl"
+              />
+            )}
+            {selectedGalleryItem.caption && (
+              <p className="text-white text-sm text-center mt-3">{selectedGalleryItem.caption}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Video Modal */}
       {selectedVideo && (
