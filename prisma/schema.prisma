@@ -17,6 +17,7 @@ model User {
   bio         String?
   avatar      String?
   gender      String    @default("MALE")
+  language    String    @default("pt")
   role        String    @default("USER")
   coins       Int       @default(0)
   messageCost Int       @default(5)

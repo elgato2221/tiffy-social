@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const validation = validateBody(registerSchema, body);
     if (!validation.success) return validation.response;
 
-    const { name, username, email, password, gender } = validation.data;
+    const { name, username, email, password, gender, language } = validation.data;
 
     // Check if email already exists
     const existingEmail = await prisma.user.findUnique({
@@ -59,6 +59,7 @@ export async function POST(request: Request) {
         email,
         password: hashedPassword,
         gender,
+        language,
         role,
         coins,
         emailVerificationToken,

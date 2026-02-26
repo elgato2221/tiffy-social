@@ -10,6 +10,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [gender, setGender] = useState("");
+  const [language, setLanguage] = useState("pt");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
@@ -39,7 +40,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, username, email, password, gender }),
+        body: JSON.stringify({ name, username, email, password, gender, language }),
       });
 
       const data = await res.json();
@@ -193,6 +194,33 @@ export default function RegisterPage() {
                         : "bg-gray-50 border-gray-300 text-gray-600 hover:border-gray-400"
                     }`}
                   >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                Idioma / Language / Idioma
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: "pt", label: "Portugues", flag: "🇧🇷" },
+                  { value: "es", label: "Espanol", flag: "🇪🇸" },
+                  { value: "en", label: "English", flag: "🇺🇸" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setLanguage(opt.value)}
+                    className={`py-3 px-2 rounded-xl text-sm font-semibold transition border flex flex-col items-center gap-1 ${
+                      language === opt.value
+                        ? "bg-purple-500 border-purple-500 text-white"
+                        : "bg-gray-50 border-gray-300 text-gray-600 hover:border-gray-400"
+                    }`}
+                  >
+                    <span className="text-lg">{opt.flag}</span>
                     {opt.label}
                   </button>
                 ))}

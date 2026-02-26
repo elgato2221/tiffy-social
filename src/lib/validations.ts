@@ -15,6 +15,7 @@ export const registerSchema = z.object({
   email: z.string().email("Email invalido"),
   password: passwordSchema,
   gender: z.enum(["MALE", "FEMALE", "OTHER"]),
+  language: z.enum(["pt", "es", "en"]).optional().default("pt"),
 });
 
 // Message send
