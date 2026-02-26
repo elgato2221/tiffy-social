@@ -5,6 +5,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { timeAgo, MESSAGE_COST, AUDIO_COST } from "@/lib/utils";
 import ChatBubble from "@/components/ChatBubble";
+import GiftModal from "@/components/GiftModal";
 import { CoinIcon } from "@/components/ui/CoinIcon";
 
 interface MessageUser {
@@ -81,6 +82,9 @@ export default function ChatPage() {
 
   // Emoji picker state
   const [showEmojis, setShowEmojis] = useState(false);
+
+  // Gift modal state
+  const [showGiftModal, setShowGiftModal] = useState(false);
 
   // Locked media state
   const [showMediaPicker, setShowMediaPicker] = useState(false);
@@ -522,7 +526,10 @@ export default function ChatPage() {
           </svg>
         </button>
 
-        <div className="relative flex-shrink-0">
+        <button
+          onClick={() => router.push(`/profile/${otherUserId}`)}
+          className="relative flex-shrink-0"
+        >
           {otherUser?.avatar ? (
             <img
               src={otherUser.avatar}
@@ -537,9 +544,12 @@ export default function ChatPage() {
           {otherUser?.online && (
             <div className="absolute bottom-0 right-0 w-2 h-2 bg-purple-400 rounded-full border-2 border-white" />
           )}
-        </div>
+        </button>
 
-        <div className="flex-1 min-w-0">
+        <button
+          onClick={() => router.push(`/profile/${otherUserId}`)}
+          className="flex-1 min-w-0 text-left"
+        >
           <h2 className="text-sm font-semibold text-gray-900 truncate">
             {otherUser?.name || "Usuario"}
           </h2>
@@ -548,7 +558,18 @@ export default function ChatPage() {
           ) : (
             <p className="text-[11px] text-gray-500">Offline</p>
           )}
-        </div>
+        </button>
+
+        {/* Gift button */}
+        <button
+          onClick={() => setShowGiftModal(true)}
+          className="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:text-purple-500 hover:bg-purple-50 transition flex-shrink-0"
+          title="Enviar presente"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+          </svg>
+        </button>
       </div>
 
       {/* Messages */}
@@ -646,6 +667,14 @@ export default function ChatPage() {
           </div>
         </div>
       )}
+
+      {/* Gift Modal */}
+      <GiftModal
+        receiverId={otherUserId}
+        receiverName={otherUser?.name || "Usuario"}
+        isOpen={showGiftModal}
+        onClose={() => setShowGiftModal(false)}
+      />
 
       {/* Input Bar */}
       <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 pt-2 pb-3 w-full min-w-0 safe-bottom">
