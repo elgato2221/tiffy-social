@@ -86,22 +86,26 @@ export default function VideoCard({ video, currentUserId, index = 0, onDelete }:
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = window.location.origin + "/feed";
+    const url = `${window.location.origin}/profile/${video.user.id}`;
 
     if (navigator.share) {
-      navigator.share({ title: video.caption || "Tiffy Social", url }).catch(() => {});
+      navigator.share({ title: `${video.user.name} no Tiffy`, text: video.caption || "", url }).catch(() => {});
     } else {
-      // Fallback: copy via textarea for HTTP compatibility
-      const ta = document.createElement("textarea");
-      ta.value = url;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
     }
   };
 

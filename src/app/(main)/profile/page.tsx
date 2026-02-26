@@ -51,6 +51,7 @@ export default function MyProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [editMessageCost, setEditMessageCost] = useState(5);
@@ -150,6 +151,29 @@ export default function MyProfilePage() {
     } finally {
       setUploadingAvatar(false);
       if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  }
+
+  function handleShareProfile() {
+    const url = `${window.location.origin}/profile/${profile?.id}`;
+    if (navigator.share) {
+      navigator.share({ title: `${profile?.name} no Tiffy`, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2000);
+      }).catch(() => {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2000);
+      });
     }
   }
 
@@ -332,6 +356,20 @@ export default function MyProfilePage() {
         >
           Minha Galeria
         </Link>
+        <button
+          onClick={handleShareProfile}
+          className="py-2.5 px-4 border-2 border-gray-300 text-gray-500 font-semibold rounded-xl hover:bg-gray-50 transition"
+        >
+          {copiedLink ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 24 24" fill="currentColor">
+              <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935-2.186 2.25 2.25 0 0 0-3.935 2.186Zm0-12.814a2.25 2.25 0 1 0 3.933 2.185 2.25 2.25 0 0 0-3.933-2.185Z" />
+            </svg>
+          )}
+        </button>
       </div>
 
       {/* Wallet & Earnings Cards (Tuyyo style) */}
