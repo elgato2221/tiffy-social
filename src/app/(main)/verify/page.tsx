@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { uploadFile } from "@/lib/uploadFile";
 
 interface VerificationData {
   verified: boolean;
@@ -150,7 +151,6 @@ export default function VerifyPage() {
       });
 
       // Upload selfie
-      const { uploadFile } = await import("@/lib/uploadFile");
       const url = await uploadFile(file);
 
       // Create verification request

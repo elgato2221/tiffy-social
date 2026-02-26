@@ -4,6 +4,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { uploadFile } from "@/lib/uploadFile";
+
 export default function UploadPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -112,7 +114,6 @@ export default function UploadPage() {
 
     try {
       // Step 1: Upload file (Vercel Blob client upload, bypasses 4.5MB body limit)
-      const { uploadFile } = await import("@/lib/uploadFile");
       const url = await uploadFile(file);
 
       setProgress(80);

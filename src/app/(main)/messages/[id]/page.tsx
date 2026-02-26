@@ -7,6 +7,7 @@ import { timeAgo, MESSAGE_COST, AUDIO_COST } from "@/lib/utils";
 import ChatBubble from "@/components/ChatBubble";
 import GiftModal from "@/components/GiftModal";
 import { CoinIcon } from "@/components/ui/CoinIcon";
+import { uploadFile } from "@/lib/uploadFile";
 
 interface MessageUser {
   id: string;
@@ -329,7 +330,6 @@ export default function ChatPage() {
       const ext = audioBlob.type.includes("webm") ? "webm" : "mp4";
       const file = new File([audioBlob], `audio-${Date.now()}.${ext}`, { type: audioBlob.type });
 
-      const { uploadFile } = await import("@/lib/uploadFile");
       const url = await uploadFile(file);
 
       const res = await fetch("/api/messages", {
@@ -445,7 +445,6 @@ export default function ChatPage() {
       // Compress image if needed (Vercel has 4.5MB limit)
       const fileToUpload = await compressImage(mediaFile);
 
-      const { uploadFile } = await import("@/lib/uploadFile");
       const url = await uploadFile(fileToUpload);
 
       const isVideo = mediaFile.type.startsWith("video/");

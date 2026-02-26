@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { resizeImage } from "@/lib/utils";
 import { CoinIcon } from "@/components/ui/CoinIcon";
+import { uploadFile } from "@/lib/uploadFile";
 
 interface GalleryItem {
   id: string;
@@ -128,7 +129,6 @@ export default function MyGalleryPage() {
           // If resize fails, upload original
         }
       }
-      const { uploadFile } = await import("@/lib/uploadFile");
       const url = await uploadFile(fileToUpload);
 
       setUploadProgress(80);

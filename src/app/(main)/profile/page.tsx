@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { resizeImage, MIN_MESSAGE_COST, MAX_MESSAGE_COST } from "@/lib/utils";
 import { CoinIcon } from "@/components/ui/CoinIcon";
+import { uploadFile } from "@/lib/uploadFile";
 
 interface UserProfile {
   id: string;
@@ -133,7 +134,6 @@ export default function MyProfilePage() {
       } catch {
         // If resize fails, upload original
       }
-      const { uploadFile } = await import("@/lib/uploadFile");
       const url = await uploadFile(fileToUpload);
 
       const res = await fetch(`/api/users/${myId}`, {
