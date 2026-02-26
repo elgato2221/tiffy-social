@@ -339,13 +339,13 @@ export default function VerifyPage() {
         {/* Live camera view */}
         {cameraActive && (
           <div className="space-y-4">
-            <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-100">
+            <div className="relative rounded-2xl overflow-hidden border border-gray-200 bg-gray-100" style={{ maxHeight: "55vh" }}>
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 muted
-                className="w-full object-cover"
+                className="w-full h-full object-cover"
                 style={{ transform: "scaleX(-1)" }}
               />
               {/* Camera overlay guides */}
