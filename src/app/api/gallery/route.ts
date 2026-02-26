@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
       return {
         id: item.id,
         url: unlocked ? item.url : null,
+        thumbnailUrl: item.url, // always sent for blurred preview
         type: item.type,
         price: item.price,
         caption: item.caption,

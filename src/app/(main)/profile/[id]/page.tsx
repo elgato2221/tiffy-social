@@ -29,6 +29,7 @@ interface UserProfile {
 interface GalleryItem {
   id: string;
   url: string | null;
+  thumbnailUrl: string;
   type: string;
   price: number;
   caption: string | null;
@@ -346,18 +347,37 @@ export default function UserProfilePage() {
                     )}
                   </button>
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-purple-100/90 to-purple-200/90 flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                    </svg>
-                    <p className="text-purple-500 text-xs font-medium mt-2">Conteudo exclusivo</p>
-                    <button
-                      onClick={() => handleUnlock(item.id)}
-                      disabled={unlocking === item.id}
-                      className="mt-3 px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-full hover:bg-purple-600 transition disabled:opacity-50 shadow-lg"
-                    >
-                      {unlocking === item.id ? "..." : <span className="flex items-center gap-1"><CoinIcon size="xs" /> {item.price}</span>}
-                    </button>
+                  <div className="relative w-full h-full">
+                    {/* Blurred preview */}
+                    {item.type === "VIDEO" ? (
+                      <video
+                        src={`${item.thumbnailUrl}#t=0.1`}
+                        className="w-full h-full object-cover blur-xl scale-110"
+                        muted
+                        playsInline
+                        preload="auto"
+                        crossOrigin="anonymous"
+                      />
+                    ) : (
+                      <img
+                        src={item.thumbnailUrl}
+                        alt=""
+                        className="w-full h-full object-cover blur-xl scale-110"
+                      />
+                    )}
+                    {/* Lock overlay */}
+                    <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                      <button
+                        onClick={() => handleUnlock(item.id)}
+                        disabled={unlocking === item.id}
+                        className="mt-3 px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-full hover:bg-purple-600 transition disabled:opacity-50 shadow-lg flex items-center gap-1.5"
+                      >
+                        {unlocking === item.id ? "..." : <><CoinIcon size="xs" /> {item.price} Desbloquear</>}
+                      </button>
+                    </div>
                   </div>
                 )}
                 {item.unlocked && item.caption && (
