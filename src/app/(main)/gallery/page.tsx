@@ -339,7 +339,7 @@ export default function MyGalleryPage() {
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl max-h-[90vh] overflow-y-auto border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-gray-900">
-                Novo Item da Galeria
+                Conteudo Exclusivo
               </h3>
               <button
                 onClick={() => {
@@ -392,10 +392,10 @@ export default function MyGalleryPage() {
                       />
                     </svg>
                     <p className="text-sm font-medium text-gray-500">
-                      Selecionar foto ou video
+                      Selecionar foto ou video exclusivo
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      JPG, PNG, WebP, MP4, WebM, MOV
+                      Seus fas pagam moedas para desbloquear
                     </p>
                   </button>
                 ) : (
@@ -481,8 +481,11 @@ export default function MyGalleryPage() {
               {/* Price */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Preco (moedas)
+                  Preco para desbloquear
                 </label>
+                <p className="text-xs text-gray-400 mb-2">
+                  Seus fas pagam esse valor em moedas para ver o conteudo. Voce recebe as moedas!
+                </p>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                     <CoinIcon size="xs" />
@@ -497,6 +500,9 @@ export default function MyGalleryPage() {
                     className="w-full pl-12 pr-4 py-3 border border-gray-300 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
                   />
                 </div>
+                <p className="text-xs text-purple-500 mt-1.5">
+                  ≈ R$ {((parseInt(formPrice) || 0) * 0.099).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} por desbloqueio
+                </p>
               </div>
 
               {/* Caption */}
@@ -563,7 +569,7 @@ export default function MyGalleryPage() {
                       Enviando...
                     </span>
                   ) : (
-                    "Publicar"
+                    "Publicar conteudo exclusivo"
                   )}
                 </button>
               </div>
