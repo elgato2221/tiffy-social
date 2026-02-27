@@ -338,6 +338,7 @@ export default function MyProfilePage() {
         <div className="text-center">
           <p className="text-2xl font-bold text-purple-500">{profile.coins.toLocaleString("pt-BR")}</p>
           <p className="text-xs text-gray-400 mt-0.5">{t("common.coins")}</p>
+          <p className="text-[10px] text-gray-400">≈ R$ {(profile.coins * 0.099).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
       </div>
 
@@ -384,7 +385,8 @@ export default function MyProfilePage() {
             <CoinIcon size="sm" />
             <p className="text-xl font-bold text-gray-900">{profile.coins.toLocaleString("pt-BR")}</p>
           </div>
-          <div className="mt-3">
+          <p className="text-[10px] text-gray-400 mt-0.5">≈ R$ {(profile.coins * 0.099).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <div className="mt-2">
             <span className="text-xs font-semibold text-purple-500 bg-purple-50 px-3 py-1 rounded-full">
               {t("profile.buy")}
             </span>
