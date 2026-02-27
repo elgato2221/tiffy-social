@@ -170,6 +170,9 @@ const translations: Record<string, TranslationValue> = {
   "wallet.txMediaUnlock": { pt: "Midia desbloqueada", es: "Contenido desbloqueado", en: "Media unlocked" },
   "wallet.txMediaEarn": { pt: "Ganho de midia", es: "Ganancia de contenido", en: "Media earning" },
   "wallet.txDefault": { pt: "Transacao", es: "Transaccion", en: "Transaction" },
+  "wallet.messagePrice": { pt: "Preco da Mensagem", es: "Precio del Mensaje", en: "Message Price" },
+  "wallet.messagePriceDesc": { pt: "Valor em moedas que outros pagam para te enviar mensagem", es: "Valor en monedas que otros pagan para enviarte un mensaje", en: "Amount in coins others pay to send you a message" },
+  "wallet.messagePriceSaved": { pt: "Preco atualizado!", es: "Precio actualizado!", en: "Price updated!" },
 
   // ===== GALLERY =====
   "gallery.title": { pt: "Minha Galeria", es: "Mi Galeria", en: "My Gallery" },

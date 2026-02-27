@@ -3,8 +3,9 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { timeAgo } from "@/lib/utils";
+import { timeAgo, MIN_MESSAGE_COST, MAX_MESSAGE_COST } from "@/lib/utils";
 import WalletBalance from "@/components/WalletBalance";
+import { CoinIcon } from "@/components/ui/CoinIcon";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Transaction {
@@ -185,6 +186,12 @@ function WalletPage() {
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
   const [withdrawData, setWithdrawData] = useState<WithdrawData | null>(null);
 
+  // Message price states
+  const [messageCost, setMessageCost] = useState<number>(5);
+  const [savingCost, setSavingCost] = useState(false);
+  const [costSaved, setCostSaved] = useState(false);
+  const [userVerified, setUserVerified] = useState(false);
+
   const myId = session?.user?.id;
   const searchParams = useSearchParams();
 
@@ -225,6 +232,8 @@ function WalletPage() {
         if (userRes.ok) {
           const userData = await userRes.json();
           setUserRole(userData.role || "");
+          setMessageCost(userData.messageCost ?? 5);
+          setUserVerified(userData.verified ?? false);
         }
 
         if (withdrawRes.ok) {
@@ -377,6 +386,26 @@ function WalletPage() {
       .filter((t) => t.amount > 0)
       .reduce((sum, t) => sum + t.amount, 0) || 0;
 
+  async function handleSaveMessageCost() {
+    setSavingCost(true);
+    setCostSaved(false);
+    try {
+      const res = await fetch(`/api/users/${myId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageCost }),
+      });
+      if (res.ok) {
+        setCostSaved(true);
+        setTimeout(() => setCostSaved(false), 3000);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSavingCost(false);
+    }
+  }
+
   if (status === "loading" || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
@@ -441,6 +470,48 @@ function WalletPage() {
           <p className="text-xs text-purple-400 mt-3">
             {t("wallet.earningsDesc")}
           </p>
+        </div>
+      )}
+
+      {/* Message Price Config - only for verified */}
+      {userVerified && (
+        <div className="mx-6 mb-6 relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-200 p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-purple-500/15 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-bold text-gray-900">{t("wallet.messagePrice")}</h3>
+          </div>
+          <p className="text-xs text-gray-400 mb-3">
+            {t("wallet.messagePriceDesc")} ({MIN_MESSAGE_COST}-{MAX_MESSAGE_COST})
+          </p>
+          <div className="flex items-center gap-2">
+            <CoinIcon size="sm" />
+            <input
+              type="number"
+              value={messageCost}
+              onChange={(e) => setMessageCost(Math.max(MIN_MESSAGE_COST, Math.min(MAX_MESSAGE_COST, parseInt(e.target.value) || MIN_MESSAGE_COST)))}
+              min={MIN_MESSAGE_COST}
+              max={MAX_MESSAGE_COST}
+              className="flex-1 px-4 py-2.5 border border-gray-200 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 text-sm"
+            />
+            <button
+              onClick={handleSaveMessageCost}
+              disabled={savingCost}
+              className="px-4 py-2.5 bg-purple-500 text-white text-sm font-semibold rounded-xl hover:bg-purple-600 transition disabled:opacity-50"
+            >
+              {savingCost ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                t("common.save")
+              )}
+            </button>
+          </div>
+          {costSaved && (
+            <p className="text-xs text-green-500 font-medium mt-2">{t("wallet.messagePriceSaved")}</p>
+          )}
         </div>
       )}
 

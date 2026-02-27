@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { resizeImage, MIN_MESSAGE_COST, MAX_MESSAGE_COST } from "@/lib/utils";
+import { resizeImage } from "@/lib/utils";
 import { CoinIcon } from "@/components/ui/CoinIcon";
 import { uploadFile } from "@/lib/uploadFile";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -56,7 +56,6 @@ export default function MyProfilePage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
-  const [editMessageCost, setEditMessageCost] = useState(5);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
@@ -94,7 +93,6 @@ export default function MyProfilePage() {
           setProfile(data);
           setEditName(data.name || "");
           setEditBio(data.bio || "");
-          setEditMessageCost(data.messageCost || 5);
         }
         if (followRes.ok) {
           const followData = await followRes.json();
@@ -190,13 +188,12 @@ export default function MyProfilePage() {
         body: JSON.stringify({
           name: editName,
           bio: editBio,
-          ...(profile?.verified && { messageCost: editMessageCost }),
         }),
       });
 
       if (res.ok) {
         const updated = await res.json();
-        setProfile((prev) => (prev ? { ...prev, name: updated.name ?? editName, bio: updated.bio ?? editBio, ...(updated.messageCost !== undefined && { messageCost: updated.messageCost }) } : prev));
+        setProfile((prev) => (prev ? { ...prev, name: updated.name ?? editName, bio: updated.bio ?? editBio } : prev));
         setShowEdit(false);
       } else {
         alert("Erro ao salvar perfil. Tente novamente.");
@@ -597,28 +594,6 @@ export default function MyProfilePage() {
                 />
               </div>
             </div>
-
-            {profile.verified && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  {t("profile.messageCost")}
-                </label>
-                <div className="flex items-center gap-2">
-                  <CoinIcon size="sm" />
-                  <input
-                    type="number"
-                    value={editMessageCost}
-                    onChange={(e) => setEditMessageCost(Math.max(MIN_MESSAGE_COST, Math.min(MAX_MESSAGE_COST, parseInt(e.target.value) || MIN_MESSAGE_COST)))}
-                    min={MIN_MESSAGE_COST}
-                    max={MAX_MESSAGE_COST}
-                    className="flex-1 px-4 py-3 border border-gray-300 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
-                  />
-                </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  {t("profile.messageCostDesc")} ({MIN_MESSAGE_COST}-{MAX_MESSAGE_COST})
-                </p>
-              </div>
-            )}
 
             <div className="flex gap-3 mt-6">
               <button
