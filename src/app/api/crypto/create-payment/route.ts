@@ -6,10 +6,10 @@ const NOWPAYMENTS_API = "https://api.nowpayments.io/v1";
 
 const COIN_PACKAGES: Record<number, number> = {
   100: 9.9,
-  500: 39.9,
-  1000: 69.9,
-  5000: 299.9,
-  10000: 499.9,
+  500: 46.9,
+  1000: 84.9,
+  5000: 419.9,
+  10000: 839.9,
 };
 
 export async function POST(req: NextRequest) {

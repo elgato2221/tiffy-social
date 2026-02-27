@@ -5,10 +5,10 @@ import { MercadoPagoConfig, Preference } from "mercadopago";
 
 const COIN_PACKAGES: Record<number, { price: number; label: string }> = {
   100: { price: 9.9, label: "100 moedas" },
-  500: { price: 39.9, label: "500 moedas" },
-  1000: { price: 69.9, label: "1.000 moedas" },
-  5000: { price: 299.9, label: "5.000 moedas" },
-  10000: { price: 499.9, label: "10.000 moedas" },
+  500: { price: 46.9, label: "500 moedas" },
+  1000: { price: 84.9, label: "1.000 moedas" },
+  5000: { price: 419.9, label: "5.000 moedas" },
+  10000: { price: 839.9, label: "10.000 moedas" },
 };
 
 export async function POST(req: NextRequest) {

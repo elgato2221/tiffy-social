@@ -49,10 +49,10 @@ function coinsToReais(coins: number): string {
 
 const COIN_PACKAGES = [
   { amount: 100, price: "R$ 9,90", popular: false, savings: null },
-  { amount: 500, price: "R$ 39,90", popular: true, savings: null },
-  { amount: 1000, price: "R$ 69,90", popular: false, savings: "Economize 29%" },
-  { amount: 5000, price: "R$ 299,90", popular: false, savings: "Economize 39%" },
-  { amount: 10000, price: "R$ 499,90", popular: false, savings: "Economize 49%" },
+  { amount: 500, price: "R$ 46,90", popular: true, savings: "5% off" },
+  { amount: 1000, price: "R$ 84,90", popular: false, savings: "14% off" },
+  { amount: 5000, price: "R$ 419,90", popular: false, savings: "15% off" },
+  { amount: 10000, price: "R$ 839,90", popular: false, savings: "15% off" },
 ];
 
 function getTransactionIcon(type: string): string {
