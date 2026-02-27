@@ -430,7 +430,6 @@ export default function UploadPage() {
           ref={fileInputRef}
           type="file"
           accept="video/*"
-          capture="environment"
           onChange={handleInputChange}
           className="hidden"
         />

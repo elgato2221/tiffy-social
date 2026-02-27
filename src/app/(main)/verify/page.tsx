@@ -176,8 +176,10 @@ export default function VerifyPage() {
         const err = await res.json();
         setError(err.error || "Erro ao enviar verificacao.");
       }
-    } catch {
-      setError("Erro ao enviar. Tente novamente.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      console.error("Verification submit error:", msg, err);
+      setError(`Erro ao enviar: ${msg}. Tente novamente.`);
     } finally {
       setSubmitting(false);
     }
