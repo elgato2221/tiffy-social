@@ -65,7 +65,7 @@ export const createReportSchema = z.object({
 export const createGalleryItemSchema = z.object({
   url: z.string().min(1),
   type: z.enum(["PHOTO", "VIDEO"]).default("PHOTO"),
-  price: z.number().int().min(1).max(10000).default(10),
+  price: z.number().int().min(0).max(10000).default(10),
   caption: z.string().max(300).optional().nullable(),
 });
 

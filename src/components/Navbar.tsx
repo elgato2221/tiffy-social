@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NavItem {
   label: string;
@@ -16,8 +17,19 @@ interface NavItem {
 export default function Navbar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { t } = useLanguage();
   const isAdmin = session?.user?.role === "ADMIN";
   const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [verified, setVerified] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetch(`/api/users/${session.user.id}`)
+        .then((res) => res.json())
+        .then((data) => setVerified(!!data.verified))
+        .catch(() => setVerified(false));
+    }
+  }, [session?.user?.id]);
 
   // Hide navbar inside individual chat pages (like Instagram)
   const isChatPage = pathname?.match(/^\/messages\/[^/]+$/);
@@ -25,7 +37,7 @@ export default function Navbar() {
 
   const navItems: NavItem[] = [
     {
-      label: "Inicio",
+      label: t("nav.home"),
       href: "/feed",
       icon: (active) => (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.5}>
@@ -34,7 +46,7 @@ export default function Navbar() {
       ),
     },
     {
-      label: "Explorar",
+      label: t("nav.explore"),
       href: "/explore",
       icon: (active) => (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.5}>
@@ -43,7 +55,7 @@ export default function Navbar() {
       ),
     },
     {
-      label: "Criar",
+      label: t("nav.create"),
       href: "/upload",
       isCenter: true,
       icon: () => (
@@ -53,7 +65,7 @@ export default function Navbar() {
       ),
     },
     {
-      label: "Chat",
+      label: t("nav.chat"),
       href: "/messages",
       icon: (active) => (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.5}>
@@ -62,7 +74,7 @@ export default function Navbar() {
       ),
     },
     {
-      label: "Perfil",
+      label: t("nav.profile"),
       href: "/profile",
       icon: (active) => (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={active ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 0 : 1.5}>
@@ -105,37 +117,52 @@ export default function Navbar() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowCreateMenu(false)} />
                     <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 w-52 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-                      <Link
-                        href="/upload"
-                        onClick={() => setShowCreateMenu(false)}
-                        className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition"
-                      >
-                        <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
-                          </svg>
+                      {verified === false ? (
+                        <div className="px-4 py-4 text-center">
+                          <p className="text-sm text-gray-600 mb-3">{t("nav.verifyRequired")}</p>
+                          <Link
+                            href="/verify"
+                            onClick={() => setShowCreateMenu(false)}
+                            className="inline-block px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-full hover:bg-purple-600 transition"
+                          >
+                            {t("nav.verifyNow")}
+                          </Link>
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Video no Feed</p>
-                          <p className="text-[11px] text-gray-400">Postar video publico</p>
-                        </div>
-                      </Link>
-                      <div className="border-t border-gray-100" />
-                      <Link
-                        href="/gallery"
-                        onClick={() => setShowCreateMenu(false)}
-                        className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition"
-                      >
-                        <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Galeria do Perfil</p>
-                          <p className="text-[11px] text-gray-400">Foto ou video exclusivo</p>
-                        </div>
-                      </Link>
+                      ) : (
+                        <>
+                          <Link
+                            href="/upload"
+                            onClick={() => setShowCreateMenu(false)}
+                            className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition"
+                          >
+                            <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{t("nav.videoFeed")}</p>
+                              <p className="text-[11px] text-gray-400">{t("nav.videoFeedDesc")}</p>
+                            </div>
+                          </Link>
+                          <div className="border-t border-gray-100" />
+                          <Link
+                            href="/gallery"
+                            onClick={() => setShowCreateMenu(false)}
+                            className="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition"
+                          >
+                            <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{t("nav.gallery")}</p>
+                              <p className="text-[11px] text-gray-400">{t("nav.galleryDesc")}</p>
+                            </div>
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </>
                 )}

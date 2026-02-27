@@ -7,6 +7,7 @@ import Link from "next/link";
 import { resizeImage } from "@/lib/utils";
 import { CoinIcon } from "@/components/ui/CoinIcon";
 import { uploadFile } from "@/lib/uploadFile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GalleryItem {
   id: string;
@@ -20,6 +21,7 @@ interface GalleryItem {
 }
 
 export default function MyGalleryPage() {
+  const { t } = useLanguage();
   const { data: session, status } = useSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,6 +40,7 @@ export default function MyGalleryPage() {
   const [formCaption, setFormCaption] = useState("");
   const [formRatio, setFormRatio] = useState<"4:5" | "1:1">("4:5");
   const [formError, setFormError] = useState<string | null>(null);
+  const [isFree, setIsFree] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -80,6 +83,7 @@ export default function MyGalleryPage() {
     setFormRatio("4:5");
     setFormError(null);
     setUploadProgress(0);
+    setIsFree(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -93,12 +97,12 @@ export default function MyGalleryPage() {
     const isImage = file.type.startsWith("image/");
 
     if (!isVideo && !isImage) {
-      setFormError("Use imagem (JPG, PNG, WebP) ou video (MP4, WebM, MOV).");
+      setFormError(t("gallery.formatError"));
       return;
     }
 
     if (file.size > 350 * 1024 * 1024) {
-      setFormError("Arquivo muito grande. Maximo 350MB.");
+      setFormError(t("gallery.tooLarge"));
       return;
     }
 
@@ -111,7 +115,7 @@ export default function MyGalleryPage() {
     e.preventDefault();
 
     if (!formFile) {
-      setFormError("Selecione um arquivo.");
+      setFormError(t("gallery.selectFile"));
       return;
     }
 
@@ -140,7 +144,7 @@ export default function MyGalleryPage() {
         body: JSON.stringify({
           url,
           type: formType,
-          price: parseInt(formPrice) || 10,
+          price: isFree ? 0 : (parseInt(formPrice) || 10),
           caption: formCaption.trim() || null,
         }),
       });
@@ -165,10 +169,10 @@ export default function MyGalleryPage() {
         setShowModal(false);
       } else {
         const data = await res.json();
-        setFormError(data.error || "Erro ao adicionar item.");
+        setFormError(data.error || t("gallery.errorAdd"));
       }
     } catch {
-      setFormError("Erro ao fazer upload. Tente novamente.");
+      setFormError(t("gallery.errorUpload"));
     } finally {
       setSubmitting(false);
     }
@@ -186,7 +190,7 @@ export default function MyGalleryPage() {
     <div className="bg-white min-h-screen">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Minha Galeria</h1>
+        <h1 className="text-xl font-bold text-gray-900">{t("gallery.title")}</h1>
         {verified && (
           <button
             onClick={() => setShowModal(true)}
@@ -206,7 +210,7 @@ export default function MyGalleryPage() {
                 d="M12 4.5v15m7.5-7.5h-15"
               />
             </svg>
-            Adicionar
+            {t("gallery.add")}
           </button>
         )}
       </div>
@@ -214,10 +218,10 @@ export default function MyGalleryPage() {
       {/* Verification Banner */}
       {verified === false && (
         <div className="mx-4 mt-4 p-4 bg-purple-500/10 rounded-2xl border border-purple-500/20">
-          <p className="text-sm font-semibold text-purple-400">Perfil nao verificado</p>
-          <p className="text-xs text-purple-500/70 mt-1">Verifique seu perfil para publicar conteudo na galeria.</p>
+          <p className="text-sm font-semibold text-purple-400">{t("gallery.notVerified")}</p>
+          <p className="text-xs text-purple-500/70 mt-1">{t("gallery.verifyToPublish")}</p>
           <Link href="/verify" className="inline-block mt-2 text-xs font-semibold text-purple-500 hover:text-purple-400">
-            Verificar agora →
+            {t("gallery.verifyNow")}
           </Link>
         </div>
       )}
@@ -243,16 +247,16 @@ export default function MyGalleryPage() {
               </svg>
             </div>
             <p className="text-gray-500 font-medium">
-              Sua galeria esta vazia
+              {t("gallery.empty")}
             </p>
             <p className="text-gray-500 text-sm mt-1">
-              Adicione fotos e videos para seus fas
+              {t("gallery.addForFans")}
             </p>
             <button
               onClick={() => setShowModal(true)}
               className="mt-6 bg-gradient-to-r from-purple-400 to-purple-600 text-white text-sm font-semibold px-6 py-2.5 rounded-full shadow-md shadow-purple-500/25 transition-transform hover:scale-105 active:scale-95"
             >
-              Adicionar primeiro item
+              {t("gallery.addFirst")}
             </button>
           </div>
         ) : (
@@ -298,10 +302,16 @@ export default function MyGalleryPage() {
                   )}
 
                   {/* Price Badge */}
-                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded-full">
-                    <CoinIcon size="xs" />
-                    {item.price}
-                  </div>
+                  {item.price === 0 ? (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-green-500/80 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded-full">
+                      {t("gallery.free")}
+                    </div>
+                  ) : (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded-full">
+                      <CoinIcon size="xs" />
+                      {item.price}
+                    </div>
+                  )}
 
                   {/* Video indicator */}
                   {item.type === "VIDEO" && (
@@ -339,7 +349,7 @@ export default function MyGalleryPage() {
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl max-h-[90vh] overflow-y-auto border border-gray-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-gray-900">
-                Conteudo Exclusivo
+                {isFree ? t("gallery.freeContent") : t("gallery.exclusiveContent")}
               </h3>
               <button
                 onClick={() => {
@@ -369,7 +379,7 @@ export default function MyGalleryPage() {
               {/* File Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Arquivo
+                  {t("gallery.file")}
                 </label>
                 {!formFile ? (
                   <button
@@ -392,10 +402,10 @@ export default function MyGalleryPage() {
                       />
                     </svg>
                     <p className="text-sm font-medium text-gray-500">
-                      Selecionar foto ou video exclusivo
+                      {t("gallery.selectExclusive")}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Seus fas pagam moedas para desbloquear
+                      {isFree ? t("gallery.freeDesc") : t("gallery.fansPayToUnlock")}
                     </p>
                   </button>
                 ) : (
@@ -429,7 +439,7 @@ export default function MyGalleryPage() {
                       </svg>
                     </button>
                     <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-                      {formType === "VIDEO" ? "Video" : "Foto"}
+                      {formType === "VIDEO" ? t("gallery.video") : t("gallery.photo")}
                     </div>
                   </div>
                 )}
@@ -442,11 +452,45 @@ export default function MyGalleryPage() {
                 />
               </div>
 
+              {/* Content Type Toggle */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  {t("gallery.contentType")}
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsFree(true)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition ${
+                      isFree
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    }`}
+                  >
+                    {t("gallery.freeContent")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsFree(false)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition ${
+                      !isFree
+                        ? "bg-purple-500 text-white"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    }`}
+                  >
+                    {t("gallery.exclusiveContent")}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {isFree ? t("gallery.freeDesc") : t("gallery.paidDesc")}
+                </p>
+              </div>
+
               {/* Aspect Ratio (only for photos) */}
               {formType === "PHOTO" && formFile && (
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Proporcao
+                    {t("gallery.aspectRatio")}
                   </label>
                   <div className="flex gap-2">
                     <button
@@ -458,7 +502,7 @@ export default function MyGalleryPage() {
                           : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                       }`}
                     >
-                      4:5 Retrato
+                      {t("gallery.portrait")}
                     </button>
                     <button
                       type="button"
@@ -469,7 +513,7 @@ export default function MyGalleryPage() {
                           : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                       }`}
                     >
-                      1:1 Quadrado
+                      {t("gallery.square")}
                     </button>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
@@ -478,45 +522,47 @@ export default function MyGalleryPage() {
                 </div>
               )}
 
-              {/* Price */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Preco para desbloquear
-                </label>
-                <p className="text-xs text-gray-400 mb-2">
-                  Seus fas pagam esse valor em moedas para ver o conteudo. Voce recebe as moedas!
-                </p>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                    <CoinIcon size="xs" />
+              {/* Price (only for paid content) */}
+              {!isFree && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    {t("gallery.priceToUnlock")}
+                  </label>
+                  <p className="text-xs text-gray-400 mb-2">
+                    {t("gallery.priceDesc")}
+                  </p>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                      <CoinIcon size="xs" />
+                    </div>
+                    <input
+                      type="number"
+                      value={formPrice}
+                      onChange={(e) => setFormPrice(e.target.value)}
+                      min="1"
+                      required
+                      placeholder="10"
+                      className="w-full pl-12 pr-4 py-3 border border-gray-300 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
+                    />
                   </div>
-                  <input
-                    type="number"
-                    value={formPrice}
-                    onChange={(e) => setFormPrice(e.target.value)}
-                    min="1"
-                    required
-                    placeholder="10"
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
-                  />
+                  <p className="text-xs text-purple-500 mt-1.5">
+                    ≈ R$ {((parseInt(formPrice) || 0) * 0.099).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {t("gallery.perUnlock")}
+                  </p>
                 </div>
-                <p className="text-xs text-purple-500 mt-1.5">
-                  ≈ R$ {((parseInt(formPrice) || 0) * 0.099).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} por desbloqueio
-                </p>
-              </div>
+              )}
 
               {/* Caption */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Legenda
-                  <span className="text-gray-400 font-normal"> (opcional)</span>
+                  {t("gallery.caption")}
+                  <span className="text-gray-400 font-normal"> ({t("gallery.optional")})</span>
                 </label>
                 <textarea
                   value={formCaption}
                   onChange={(e) => setFormCaption(e.target.value)}
                   rows={3}
                   maxLength={200}
-                  placeholder="Descreva seu conteudo..."
+                  placeholder={t("gallery.describeContent")}
                   className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400 resize-none"
                 />
                 <p className="text-right text-xs text-gray-500 mt-1">
@@ -533,7 +579,7 @@ export default function MyGalleryPage() {
               {submitting && uploadProgress > 0 && (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">Enviando...</span>
+                    <span className="text-gray-400">{t("common.sending")}</span>
                     <span className="text-purple-500 font-medium">{uploadProgress}%</span>
                   </div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
@@ -556,7 +602,7 @@ export default function MyGalleryPage() {
                   disabled={submitting}
                   className="flex-1 py-2.5 border border-gray-300 text-gray-600 font-semibold rounded-xl hover:bg-gray-100 transition disabled:opacity-50"
                 >
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
@@ -566,10 +612,10 @@ export default function MyGalleryPage() {
                   {submitting ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Enviando...
+                      {t("common.sending")}
                     </span>
                   ) : (
-                    "Publicar conteudo exclusivo"
+                    isFree ? t("gallery.publishContent") : t("gallery.publishExclusive")
                   )}
                 </button>
               </div>

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { CoinIcon } from "@/components/ui/CoinIcon";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ChatBubbleProps {
   content: string;
@@ -25,6 +26,7 @@ export default function ChatBubble({
   giftEmoji, giftValue,
   mediaUrl, mediaType, mediaPrice, mediaUnlocked, onUnlockMedia, unlocking,
 }: ChatBubbleProps) {
+  const { t } = useLanguage();
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -49,7 +51,7 @@ export default function ChatBubble({
         <div className="bg-gray-100 border border-gray-200 rounded-2xl px-6 py-3 text-center">
           <span className="text-4xl block mb-1">{giftEmoji || "\uD83C\uDF81"}</span>
           <p className="text-xs font-semibold text-gray-600">
-            {isMine ? "Voce enviou um presente" : "Recebeu um presente"}
+            {isMine ? t("bubble.youSentGift") : t("bubble.receivedGift")}
           </p>
           {giftValue && (
             <div className="flex items-center justify-center gap-1 mt-1">
@@ -108,7 +110,7 @@ export default function ChatBubble({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                 </svg>
                 <p className="text-white text-sm font-semibold drop-shadow">
-                  {mediaType === "video" ? "Video privado" : "Foto privada"}
+                  {mediaType === "video" ? t("bubble.privateVideo") : t("bubble.privatePhoto")}
                 </p>
                 {!isMine && onUnlockMedia ? (
                   <button
@@ -119,7 +121,7 @@ export default function ChatBubble({
                     {unlocking ? "..." : (
                       <>
                         <CoinIcon size="xs" />
-                        Desbloquear {mediaPrice}
+                        {t("profile.unlock")} {mediaPrice}
                       </>
                     )}
                   </button>

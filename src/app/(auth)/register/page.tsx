@@ -4,9 +4,11 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [gender, setGender] = useState("");
@@ -86,12 +88,12 @@ export default function RegisterPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Conta criada!</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t("auth.accountCreated")}</h2>
             <p className="text-gray-500 text-sm mb-4">
-              Enviamos um email de verificacao para <span className="text-purple-400 font-medium">{email}</span>.
-              Verifique sua caixa de entrada para ativar sua conta completamente.
+              {t("auth.verificationSent")} <span className="text-purple-400 font-medium">{email}</span>.
+              {" "}{t("auth.checkInbox")}
             </p>
-            <p className="text-gray-400 text-xs">Entrando automaticamente...</p>
+            <p className="text-gray-400 text-xs">{t("auth.autoLogin")}</p>
             <div className="mt-4">
               <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto" />
             </div>
@@ -106,16 +108,16 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-            Tiffy Social
+            {t("auth.appName")}
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            Crie seu perfil, publique e monetize
+            {t("auth.tagline")}
           </p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
-            Criar Conta
+            {t("auth.createAccount")}
           </h2>
 
           {error && (
@@ -127,7 +129,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-1">
-                Email
+                {t("auth.email")}
               </label>
               <input
                 id="email"
@@ -142,7 +144,7 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-1">
-                Senha
+                {t("auth.password")}
               </label>
               <input
                 id="password"
@@ -150,24 +152,24 @@ export default function RegisterPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Crie uma senha forte"
+                placeholder={t("auth.createPassword")}
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
               />
               {password.length > 0 && (
                 <div className="mt-2 grid grid-cols-2 gap-1">
                   {[
-                    { ok: passwordChecks.length, label: "8+ caracteres" },
-                    { ok: passwordChecks.uppercase, label: "Letra maiuscula" },
-                    { ok: passwordChecks.lowercase, label: "Letra minuscula" },
-                    { ok: passwordChecks.number, label: "Um numero" },
+                    { ok: passwordChecks.length, key: "auth.passLength" },
+                    { ok: passwordChecks.uppercase, key: "auth.passUpper" },
+                    { ok: passwordChecks.lowercase, key: "auth.passLower" },
+                    { ok: passwordChecks.number, key: "auth.passNumber" },
                   ].map((check) => (
                     <span
-                      key={check.label}
+                      key={check.key}
                       className={`text-xs ${
                         check.ok ? "text-purple-400" : "text-gray-500"
                       }`}
                     >
-                      {check.ok ? "\u2713" : "\u2022"} {check.label}
+                      {check.ok ? "\u2713" : "\u2022"} {t(check.key)}
                     </span>
                   ))}
                 </div>
@@ -176,13 +178,13 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">
-                Genero
+                {t("auth.gender")}
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { value: "MALE", label: "Masculino" },
-                  { value: "FEMALE", label: "Feminino" },
-                  { value: "OTHER", label: "To nem ai!" },
+                  { value: "MALE", key: "auth.male" },
+                  { value: "FEMALE", key: "auth.female" },
+                  { value: "OTHER", key: "auth.other" },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -194,7 +196,7 @@ export default function RegisterPage() {
                         : "bg-gray-50 border-gray-300 text-gray-600 hover:border-gray-400"
                     }`}
                   >
-                    {opt.label}
+                    {t(opt.key)}
                   </button>
                 ))}
               </div>
@@ -202,7 +204,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">
-                Idioma / Language / Idioma
+                {t("auth.language")} / Language / Idioma
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {[
@@ -232,15 +234,15 @@ export default function RegisterPage() {
               disabled={loading || !gender || !passwordValid}
               className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 rounded-xl transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Criando conta..." : "Criar conta"}
+              {loading ? t("auth.creatingAccount") : t("auth.createAccount")}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Ja possui uma conta?{" "}
+              {t("auth.hasAccountLogin")}{" "}
               <Link href="/login" className="text-purple-500 hover:text-purple-600 font-semibold transition">
-                Entrar
+                {t("auth.signIn")}
               </Link>
             </p>
           </div>

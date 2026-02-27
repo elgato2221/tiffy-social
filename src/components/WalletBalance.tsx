@@ -1,6 +1,7 @@
 "use client";
 
 import { CoinIcon } from "@/components/ui/CoinIcon";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface WalletBalanceProps {
   balance: number;
@@ -8,6 +9,8 @@ interface WalletBalanceProps {
 }
 
 export default function WalletBalance({ balance, compact = false }: WalletBalanceProps) {
+  const { t } = useLanguage();
+
   if (compact) {
     return (
       <div className="flex items-center gap-1.5">
@@ -34,7 +37,7 @@ export default function WalletBalance({ balance, compact = false }: WalletBalanc
         <p className="mt-5 text-5xl font-extrabold text-gray-900 tracking-tight">
           {balance.toLocaleString("pt-BR")}
         </p>
-        <p className="text-sm text-gray-500 mt-1 font-medium">moedas disponiveis</p>
+        <p className="text-sm text-gray-500 mt-1 font-medium">{t("wallet.coinsAvailable")}</p>
         <p className="text-xs text-gray-400 mt-0.5">
           ≈ R$ {(balance * 0.099).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </p>

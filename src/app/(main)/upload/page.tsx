@@ -5,10 +5,12 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { uploadFile } from "@/lib/uploadFile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function UploadPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -41,12 +43,12 @@ export default function UploadPage() {
     setError(null);
 
     if (!ALLOWED_TYPES.includes(selectedFile.type)) {
-      setError("Formato nao suportado. Use MP4, WebM ou MOV.");
+      setError(t("upload.formatError"));
       return;
     }
 
     if (selectedFile.size > MAX_SIZE) {
-      setError("Arquivo muito grande. Maximo 350MB.");
+      setError(t("upload.tooLarge"));
       return;
     }
 
@@ -57,7 +59,7 @@ export default function UploadPage() {
     video.onloadedmetadata = () => {
       const { videoWidth, videoHeight } = video;
       if (videoWidth >= videoHeight) {
-        setError("Apenas videos verticais (formato Reels 9:16). Grave seu video em pe!");
+        setError(t("upload.verticalOnly"));
         URL.revokeObjectURL(url);
         return;
       }
@@ -65,7 +67,7 @@ export default function UploadPage() {
       setPreview(url);
     };
     video.onerror = () => {
-      setError("Nao foi possivel ler o video. Tente outro arquivo.");
+      setError(t("upload.cantRead"));
       URL.revokeObjectURL(url);
     };
     video.src = url;
@@ -159,7 +161,7 @@ export default function UploadPage() {
       <div className="min-h-screen bg-white pb-24">
         <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
           <div className="mx-auto max-w-lg px-4 py-4">
-            <h1 className="text-center text-lg font-bold text-gray-900">Novo Video</h1>
+            <h1 className="text-center text-lg font-bold text-gray-900">{t("upload.title")}</h1>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-24 px-6">
@@ -168,9 +170,9 @@ export default function UploadPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-gray-900">Video publicado!</h2>
+          <h2 className="text-lg font-bold text-gray-900">{t("upload.published")}</h2>
           <p className="text-gray-500 text-sm mt-2 text-center max-w-xs">
-            Ja esta no seu perfil! O video tambem foi enviado para analise do feed publico.
+            {t("upload.publishedDesc")}
           </p>
           <div className="flex gap-3 mt-6">
             <button
@@ -185,13 +187,13 @@ export default function UploadPage() {
               }}
               className="px-6 py-2.5 bg-gray-100 text-gray-900 font-semibold rounded-xl transition hover:bg-gray-200"
             >
-              Postar outro
+              {t("upload.postAnother")}
             </button>
             <Link
               href="/profile"
               className="px-6 py-2.5 bg-gradient-to-r from-purple-400 to-purple-600 text-white font-semibold rounded-xl shadow-md transition hover:scale-105"
             >
-              Meu perfil
+              {t("upload.myProfile")}
             </Link>
           </div>
         </div>
@@ -205,7 +207,7 @@ export default function UploadPage() {
       <div className="min-h-screen bg-white pb-24">
         <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
           <div className="mx-auto max-w-lg px-4 py-4">
-            <h1 className="text-center text-lg font-bold text-gray-900">Novo Video</h1>
+            <h1 className="text-center text-lg font-bold text-gray-900">{t("upload.title")}</h1>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center py-24 px-6">
@@ -214,15 +216,15 @@ export default function UploadPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-gray-900">Perfil nao verificado</h2>
+          <h2 className="text-lg font-bold text-gray-900">{t("upload.notVerified")}</h2>
           <p className="text-gray-500 text-sm mt-2 text-center max-w-xs">
-            Verifique seu perfil para publicar videos na plataforma.
+            {t("upload.verifyToUpload")}
           </p>
           <Link
             href="/verify"
             className="mt-6 px-6 py-2.5 bg-gradient-to-r from-purple-400 to-purple-600 text-white font-semibold rounded-xl shadow-md transition hover:scale-105"
           >
-            Verificar agora
+            {t("upload.verifyNow")}
           </Link>
         </div>
       </div>
@@ -235,7 +237,7 @@ export default function UploadPage() {
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="mx-auto max-w-lg px-4 py-4">
           <h1 className="text-center text-lg font-bold text-gray-900">
-            Novo Video
+            {t("upload.title")}
           </h1>
         </div>
       </div>
@@ -279,16 +281,16 @@ export default function UploadPage() {
               </svg>
             </div>
             <p className="mb-1 text-base font-semibold text-gray-600">
-              {dragActive ? "Solte o video aqui" : "Selecione um video"}
+              {dragActive ? t("upload.dropHere") : t("upload.selectVideo")}
             </p>
             <p className="text-sm text-gray-500">
-              MP4, WebM ou MOV - Formato vertical (9:16) - Max 350MB
+              {t("upload.formatInfo")}
             </p>
             <button
               type="button"
               className="mt-4 rounded-full bg-gradient-to-r from-purple-400 to-purple-600 px-6 py-2 text-sm font-semibold text-white shadow-md shadow-purple-500/25 transition-transform hover:scale-105 active:scale-95"
             >
-              Escolher arquivo
+              {t("upload.chooseFile")}
             </button>
           </div>
         ) : (
@@ -353,12 +355,12 @@ export default function UploadPage() {
             {/* Caption */}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-600">
-                Legenda
+                {t("upload.caption")}
               </label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
-                placeholder="Escreva uma legenda..."
+                placeholder={t("upload.writeCaption")}
                 maxLength={300}
                 rows={3}
                 disabled={uploading}
@@ -378,11 +380,11 @@ export default function UploadPage() {
                 className="w-full flex items-center justify-between disabled:opacity-50"
               >
                 <div className="text-left">
-                  <p className="text-sm font-medium text-gray-900">Enviar tambem pro Feed</p>
+                  <p className="text-sm font-medium text-gray-900">{t("upload.alsoFeed")}</p>
                   <p className="text-[11px] text-gray-500 mt-0.5">
                     {alsoSubmitToFeed
-                      ? "Sera analisado antes de aparecer no feed publico"
-                      : "O video ficara apenas no seu perfil"}
+                      ? t("upload.willBeReviewed")
+                      : t("upload.profileOnly")}
                   </p>
                 </div>
                 <div className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${
@@ -400,7 +402,7 @@ export default function UploadPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500">
-                    {progress < 80 ? "Enviando video..." : progress < 100 ? "Finalizando..." : "Concluido!"}
+                    {progress < 80 ? t("upload.uploading") : progress < 100 ? t("upload.finishing") : t("upload.done")}
                   </span>
                   <span className="font-medium text-purple-500">{progress}%</span>
                 </div>
@@ -419,7 +421,7 @@ export default function UploadPage() {
               disabled={uploading}
               className="w-full rounded-xl bg-gradient-to-r from-purple-400 to-purple-600 py-3.5 text-base font-bold text-white shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40 active:scale-[0.98] disabled:opacity-60 disabled:shadow-none"
             >
-              {uploading ? "Publicando..." : "Publicar"}
+              {uploading ? t("upload.publishing") : t("upload.publish")}
             </button>
           </div>
         )}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GIFT_TYPES } from "@/lib/utils";
 import { CoinIcon } from "@/components/ui/CoinIcon";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GiftModalProps {
   receiverId: string;
@@ -17,6 +18,7 @@ export default function GiftModal({
   isOpen,
   onClose,
 }: GiftModalProps) {
+  const { t } = useLanguage();
   const [sendingGift, setSendingGift] = useState(false);
   const [giftSent, setGiftSent] = useState<string | null>(null);
 
@@ -48,10 +50,10 @@ export default function GiftModal({
         }, 1500);
       } else {
         const data = await res.json();
-        alert(data.error || "Erro ao enviar presente.");
+        alert(data.error || t("gift.errorSend"));
       }
     } catch {
-      alert("Erro ao enviar presente. Tente novamente.");
+      alert(t("gift.errorSend"));
     } finally {
       setSendingGift(false);
     }
@@ -64,7 +66,7 @@ export default function GiftModal({
       <div className="bg-white border border-gray-200 rounded-t-3xl w-full max-w-lg p-6 pb-10 shadow-xl animate-slide-up">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-900">
-            Enviar Presente para {receiverName}
+            {t("gift.sendTo")} {receiverName}
           </h3>
           <button
             onClick={handleClose}
@@ -91,7 +93,7 @@ export default function GiftModal({
           <div className="text-center py-8">
             <div className="text-5xl mb-3">🎉</div>
             <p className="text-lg font-semibold text-gray-900">
-              {giftSent} enviado com sucesso!
+              {giftSent} {t("gift.sentSuccess")}
             </p>
           </div>
         ) : (

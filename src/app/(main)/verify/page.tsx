@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { uploadFile } from "@/lib/uploadFile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface VerificationData {
   verified: boolean;
@@ -20,6 +21,7 @@ interface VerificationData {
 export default function VerifyPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -97,7 +99,7 @@ export default function VerifyPage() {
       }, 100);
     } catch {
       setCameraError(
-        "Nao foi possivel acessar a camera. Verifique as permissoes do navegador."
+        t("verify.cameraError")
       );
     }
   };
@@ -194,7 +196,7 @@ export default function VerifyPage() {
     return (
       <div className="bg-white min-h-screen">
         <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
-          <h1 className="text-xl font-bold text-gray-900">Verificacao</h1>
+          <h1 className="text-xl font-bold text-gray-900">{t("verify.title")}</h1>
         </div>
         <div className="flex flex-col items-center justify-center py-24 px-6">
           <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
@@ -202,15 +204,15 @@ export default function VerifyPage() {
               <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Perfil Verificado</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t("verify.verified")}</h2>
           <p className="text-gray-500 text-sm mt-2 text-center">
-            Seu perfil foi verificado com sucesso. Voce pode publicar videos e conteudo na galeria.
+            {t("verify.verifiedDesc")}
           </p>
           <button
             onClick={() => router.push("/profile")}
             className="mt-6 px-6 py-2.5 bg-purple-500 text-white font-semibold rounded-xl hover:bg-purple-600 transition"
           >
-            Ver meu perfil
+            {t("verify.viewProfile")}
           </button>
         </div>
       </div>
@@ -222,7 +224,7 @@ export default function VerifyPage() {
     return (
       <div className="bg-white min-h-screen">
         <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
-          <h1 className="text-xl font-bold text-gray-900">Verificacao</h1>
+          <h1 className="text-xl font-bold text-gray-900">{t("verify.title")}</h1>
         </div>
         <div className="flex flex-col items-center justify-center py-24 px-6">
           <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
@@ -230,9 +232,9 @@ export default function VerifyPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Aguardando Analise</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t("verify.awaitingReview")}</h2>
           <p className="text-gray-500 text-sm mt-2 text-center max-w-xs">
-            Sua selfie foi enviada e esta sendo analisada. Voce sera notificado quando for aprovada.
+            {t("verify.awaitingDesc")}
           </p>
           <div className="mt-6 rounded-2xl overflow-hidden border border-gray-200 max-w-xs">
             <img src={data.request.selfieUrl} alt="Selfie enviada" className="w-full object-cover" />
@@ -250,7 +252,7 @@ export default function VerifyPage() {
     return (
       <div className="bg-white min-h-screen">
         <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
-          <h1 className="text-xl font-bold text-gray-900">Verificacao</h1>
+          <h1 className="text-xl font-bold text-gray-900">{t("verify.title")}</h1>
         </div>
         <div className="flex flex-col items-center justify-center py-24 px-6">
           <div className="w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
@@ -258,13 +260,13 @@ export default function VerifyPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Aguarde para tentar novamente</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t("verify.waitRetry")}</h2>
           <p className="text-gray-500 text-sm mt-2 text-center max-w-xs">
-            Sua verificacao foi recusada. Voce podera enviar uma nova em <span className="text-red-400 font-bold">{remaining} dias</span>.
+            {t("verify.rejectedDesc")} <span className="text-red-400 font-bold">{remaining} dias</span>.
           </p>
           {data?.request?.reason && (
             <p className="text-xs text-red-400/70 mt-3 text-center">
-              Motivo: {data.request.reason}
+              {t("verify.reason")} {data.request.reason}
             </p>
           )}
         </div>
@@ -278,14 +280,14 @@ export default function VerifyPage() {
   return (
     <div className="bg-white min-h-screen pb-24">
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-900">Verificar Perfil</h1>
+        <h1 className="text-xl font-bold text-gray-900">{t("verify.verifyProfile")}</h1>
       </div>
 
       <div className="px-6 py-6 max-w-lg mx-auto">
         {/* Rejected notice */}
         {isRejected && (
           <div className="mb-6 p-4 bg-red-500/10 rounded-2xl border border-red-500/20">
-            <p className="text-sm font-semibold text-red-400">Verificacao recusada</p>
+            <p className="text-sm font-semibold text-red-400">{t("verify.rejected")}</p>
             <p className="text-xs text-red-400/70 mt-1">
               {data?.request?.reason || "Selfie nao atende aos requisitos."}
             </p>
@@ -295,19 +297,19 @@ export default function VerifyPage() {
 
         {/* Instructions */}
         <div className="mb-6 p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20">
-          <h3 className="text-sm font-bold text-blue-400 mb-2">Como verificar</h3>
+          <h3 className="text-sm font-bold text-blue-400 mb-2">{t("verify.howTo")}</h3>
           <ol className="text-xs text-blue-300/80 space-y-2">
             <li className="flex gap-2">
               <span className="font-bold">1.</span>
-              <span>Pegue um papel e escreva seu @{username || "username"} e a data de hoje</span>
+              <span>{t("verify.step1").replace("{username}", username || "username")}</span>
             </li>
             <li className="flex gap-2">
               <span className="font-bold">2.</span>
-              <span>Segure o papel ao lado do rosto</span>
+              <span>{t("verify.step2")}</span>
             </li>
             <li className="flex gap-2">
               <span className="font-bold">3.</span>
-              <span>Clique no botao abaixo para abrir a camera e tirar a selfie na hora</span>
+              <span>{t("verify.step3")}</span>
             </li>
           </ol>
         </div>
@@ -324,8 +326,8 @@ export default function VerifyPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
               </svg>
             </div>
-            <p className="text-sm font-semibold text-gray-600">Abrir camera</p>
-            <p className="text-xs text-gray-500 mt-1">A selfie deve ser tirada na hora</p>
+            <p className="text-sm font-semibold text-gray-600">{t("verify.openCamera")}</p>
+            <p className="text-xs text-gray-500 mt-1">{t("verify.mustBeNow")}</p>
           </button>
         )}
 
@@ -358,13 +360,13 @@ export default function VerifyPage() {
                   onClick={stopCamera}
                   className="flex-1 py-3.5 bg-black/50 backdrop-blur-md text-white font-semibold rounded-xl transition active:scale-[0.98]"
                 >
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={takePhoto}
                   className="flex-1 py-3.5 bg-gradient-to-r from-purple-400 to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 transition active:scale-[0.98]"
                 >
-                  📸 Tirar foto
+                  {t("verify.takePhoto")}
                 </button>
               </div>
             </div>
@@ -383,7 +385,7 @@ export default function VerifyPage() {
                 onClick={retakePhoto}
                 className="flex-1 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition"
               >
-                Tirar outra
+                {t("verify.takeAnother")}
               </button>
               <button
                 onClick={handleSubmit}
@@ -393,10 +395,10 @@ export default function VerifyPage() {
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Enviando...
+                    {t("common.sending")}
                   </span>
                 ) : (
-                  "Enviar"
+                  t("common.send")
                 )}
               </button>
             </div>

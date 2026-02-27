@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import GiftModal from "@/components/GiftModal";
 import { CoinIcon } from "@/components/ui/CoinIcon";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserProfile {
   id: string;
@@ -53,6 +54,7 @@ interface FollowUser {
 }
 
 export default function UserProfilePage() {
+  const { t } = useLanguage();
   const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams();
@@ -140,7 +142,7 @@ export default function UserProfilePage() {
         setFollowersCount((prev) => data.followed ? prev + 1 : prev - 1);
       }
     } catch {
-      alert("Erro ao seguir. Tente novamente.");
+      alert(t("profile.errorFollow"));
     } finally {
       setFollowLoading(false);
     }
@@ -161,10 +163,10 @@ export default function UserProfilePage() {
         }
       } else {
         const data = await res.json();
-        alert(data.error || "Erro ao desbloquear.");
+        alert(data.error || t("profile.errorUnlock"));
       }
     } catch {
-      alert("Erro ao desbloquear. Tente novamente.");
+      alert(t("profile.errorUnlock"));
     } finally {
       setUnlocking(null);
     }
@@ -221,7 +223,7 @@ export default function UserProfilePage() {
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
-        <p className="text-gray-500">Perfil nao encontrado.</p>
+        <p className="text-gray-500">{t("profile.notFound")}</p>
       </div>
     );
   }
@@ -240,7 +242,7 @@ export default function UserProfilePage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
         </button>
-        <h1 className="text-lg font-bold text-white text-center">Perfil</h1>
+        <h1 className="text-lg font-bold text-white text-center">{t("nav.profile")}</h1>
       </div>
 
       {/* Avatar */}
@@ -279,13 +281,13 @@ export default function UserProfilePage() {
           )}
           {profile.role === "CREATOR" && (
             <span className="bg-purple-500/20 text-purple-400 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-              Criadora
+              {t("common.creator")}
             </span>
           )}
         </div>
         <p className="text-sm text-gray-500 mt-0.5">@{profile.username}</p>
         {profile.online && (
-          <p className="text-xs text-purple-400 font-medium mt-1">Online agora</p>
+          <p className="text-xs text-purple-400 font-medium mt-1">{t("common.onlineNow")}</p>
         )}
         {profile.bio && (
           <p className="text-sm text-gray-500 mt-3 max-w-xs mx-auto leading-relaxed">
@@ -298,17 +300,17 @@ export default function UserProfilePage() {
       <div className="flex justify-center gap-6 mt-6 px-6">
         <div className="text-center">
           <p className="text-2xl font-bold text-gray-900">{profile._count.videos}</p>
-          <p className="text-xs text-gray-400 mt-0.5">Videos</p>
+          <p className="text-xs text-gray-400 mt-0.5">{t("common.videos")}</p>
         </div>
         <div className="w-px bg-gray-200" />
         <button onClick={() => openFollowModal("followers")} className="text-center">
           <p className="text-2xl font-bold text-gray-900">{followersCount}</p>
-          <p className="text-xs text-gray-400 mt-0.5">Seguidores</p>
+          <p className="text-xs text-gray-400 mt-0.5">{t("common.followers")}</p>
         </button>
         <div className="w-px bg-gray-200" />
         <button onClick={() => openFollowModal("following")} className="text-center">
           <p className="text-2xl font-bold text-gray-900">{followingCount}</p>
-          <p className="text-xs text-gray-400 mt-0.5">Seguindo</p>
+          <p className="text-xs text-gray-400 mt-0.5">{t("common.following")}</p>
         </button>
       </div>
 
@@ -326,9 +328,9 @@ export default function UserProfilePage() {
           {followLoading ? (
             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : isFollowing ? (
-            "Seguindo"
+            t("common.following")
           ) : (
-            "Seguir"
+            t("profile.follow")
           )}
         </button>
         <button
@@ -338,7 +340,7 @@ export default function UserProfilePage() {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
           </svg>
-          Mensagem
+          {t("profile.message")}
         </button>
         <button
           onClick={() => setShowGiftModal(true)}
@@ -368,7 +370,7 @@ export default function UserProfilePage() {
       {gallery.length > 0 && (
         <div className="px-4 mt-8">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4 px-2">
-            Galeria
+            {t("profile.gallery")}
           </h3>
           <div className="grid grid-cols-2 gap-3">
             {gallery.map((item) => (
@@ -413,9 +415,20 @@ export default function UserProfilePage() {
                         disabled={unlocking === item.id}
                         className="mt-3 px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-full hover:bg-purple-600 transition disabled:opacity-50 shadow-lg flex items-center gap-1.5"
                       >
-                        {unlocking === item.id ? "..." : <><CoinIcon size="xs" /> {item.price} Desbloquear</>}
+                        {unlocking === item.id ? "..." : <><CoinIcon size="xs" /> {item.price} {t("profile.unlock")}</>}
                       </button>
                     </div>
+                  </div>
+                )}
+                {/* Badge: Free or Price */}
+                {item.price === 0 ? (
+                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-green-500/80 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded-full">
+                    {t("gallery.free")}
+                  </div>
+                ) : !item.unlocked && (
+                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-xs font-semibold px-2 py-1 rounded-full">
+                    <CoinIcon size="xs" />
+                    {item.price}
                   </div>
                 )}
                 {item.unlocked && item.caption && (
@@ -432,7 +445,7 @@ export default function UserProfilePage() {
       {/* Videos Grid */}
       <div className="px-4 mt-8 pb-24">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4 px-2">
-          Videos
+          {t("common.videos")}
         </h3>
         {videos.length === 0 ? (
           <div className="text-center py-12">
@@ -441,7 +454,7 @@ export default function UserProfilePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
             </div>
-            <p className="text-gray-500 text-sm">Nenhum video ainda</p>
+            <p className="text-gray-500 text-sm">{t("profile.noVideos")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-1">
@@ -579,7 +592,7 @@ export default function UserProfilePage() {
           <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md shadow-xl max-h-[70vh] flex flex-col border border-gray-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-900">
-                {showFollowModal === "followers" ? "Seguidores" : "Seguindo"}
+                {showFollowModal === "followers" ? t("common.followers") : t("common.following")}
               </h3>
               <button
                 onClick={() => setShowFollowModal(null)}
@@ -599,7 +612,7 @@ export default function UserProfilePage() {
               ) : followList.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-400 text-sm">
-                    {showFollowModal === "followers" ? "Nenhum seguidor ainda" : "Nao esta seguindo ninguem"}
+                    {showFollowModal === "followers" ? t("profile.noFollowers") : t("profile.notFollowing")}
                   </p>
                 </div>
               ) : (

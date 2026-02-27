@@ -38,7 +38,8 @@ export async function GET(req: NextRequest) {
     }
 
     const result = items.map((item) => {
-      const unlocked = isOwner || unlockedItemIds.has(item.id);
+      const isFree = item.price === 0;
+      const unlocked = isOwner || isFree || unlockedItemIds.has(item.id);
       return {
         id: item.id,
         url: unlocked ? item.url : null,

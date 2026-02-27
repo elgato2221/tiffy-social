@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import VideoCard from "@/components/VideoCard";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface VideoUser {
   id: string;
@@ -25,6 +26,7 @@ interface Video {
 }
 
 export default function FeedPage() {
+  const { t } = useLanguage();
   const { data: session } = useSession();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,10 +124,10 @@ export default function FeedPage() {
           </svg>
         </div>
         <p className="mt-4 text-lg font-semibold text-white">
-          Nenhum video ainda
+          {t("feed.noVideos")}
         </p>
         <p className="mt-1 text-center text-sm text-white/70">
-          Seja o primeiro a compartilhar um momento especial!
+          {t("feed.beFirst")}
         </p>
       </div>
     );

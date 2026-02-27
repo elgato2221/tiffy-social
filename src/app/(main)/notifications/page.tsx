@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { timeAgo } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Notification {
   id: string;
@@ -14,20 +15,20 @@ interface Notification {
   createdAt: string;
 }
 
-function getNotificationAction(type: string): string {
+function getNotificationAction(type: string, t: (key: string) => string): string {
   switch (type) {
     case "FOLLOW":
-      return "comecou a te seguir";
+      return t("notif.follow");
     case "LIKE":
-      return "curtiu seu video";
+      return t("notif.like");
     case "COMMENT":
-      return "comentou no seu video";
+      return t("notif.comment");
     case "GIFT":
-      return "te enviou um presente";
+      return t("notif.gift");
     case "MESSAGE":
-      return "te enviou uma mensagem";
+      return t("notif.message");
     default:
-      return "interagiu com voce";
+      return t("notif.default");
   }
 }
 
@@ -85,6 +86,7 @@ function NotificationIcon({ type }: { type: string }) {
 }
 
 export default function NotificationsPage() {
+  const { t } = useLanguage();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -136,7 +138,7 @@ export default function NotificationsPage() {
     <div className="bg-white min-h-screen pb-20">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-900">Notificacoes</h1>
+        <h1 className="text-xl font-bold text-gray-900">{t("notif.title")}</h1>
       </div>
 
       {/* Notifications List */}
@@ -147,8 +149,8 @@ export default function NotificationsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
             </svg>
           </div>
-          <p className="text-gray-500 font-medium">Nenhuma notificacao</p>
-          <p className="text-gray-500 text-sm mt-1">Suas notificacoes aparecerao aqui</p>
+          <p className="text-gray-500 font-medium">{t("notif.empty")}</p>
+          <p className="text-gray-500 text-sm mt-1">{t("notif.emptyDesc")}</p>
         </div>
       ) : (
         <div className="divide-y divide-gray-200">
@@ -165,8 +167,8 @@ export default function NotificationsPage() {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold text-gray-900">{notification.fromName || "Alguem"}</span>{" "}
-                  {getNotificationAction(notification.type)}
+                  <span className="font-semibold text-gray-900">{notification.fromName || t("notif.someone")}</span>{" "}
+                  {getNotificationAction(notification.type, t)}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {timeAgo(notification.createdAt)}

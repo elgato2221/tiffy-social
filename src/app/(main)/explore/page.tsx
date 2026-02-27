@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import ProfileCard from "@/components/ProfileCard";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface User {
   id: string;
@@ -16,14 +17,15 @@ interface User {
 
 type FilterTab = "todos" | "mulheres" | "homens" | "online";
 
-const tabs: { key: FilterTab; label: string }[] = [
-  { key: "todos", label: "Todos" },
-  { key: "mulheres", label: "Mulheres" },
-  { key: "homens", label: "Homens" },
-  { key: "online", label: "Online" },
+const tabKeys: { key: FilterTab; i18nKey: string }[] = [
+  { key: "todos", i18nKey: "explore.all" },
+  { key: "mulheres", i18nKey: "explore.women" },
+  { key: "homens", i18nKey: "explore.men" },
+  { key: "online", i18nKey: "explore.online" },
 ];
 
 export default function ExplorePage() {
+  const { t } = useLanguage();
   const { data: session } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +79,7 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-white pb-24">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white/80 px-4 pb-3 pt-4 backdrop-blur-md border-b border-gray-200">
-        <h1 className="mb-3 text-xl font-bold text-gray-900">Descobrir</h1>
+        <h1 className="mb-3 text-xl font-bold text-gray-900">{t("explore.title")}</h1>
 
         {/* Search Bar */}
         <div className="relative mb-3">
@@ -97,7 +99,7 @@ export default function ExplorePage() {
           </svg>
           <input
             type="text"
-            placeholder="Buscar pessoas..."
+            placeholder={t("explore.search")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-gray-300 bg-gray-100 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
@@ -106,7 +108,7 @@ export default function ExplorePage() {
 
         {/* Filter Tabs */}
         <div className="flex gap-2">
-          {tabs.map((tab) => (
+          {tabKeys.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
@@ -116,7 +118,7 @@ export default function ExplorePage() {
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200"
               }`}
             >
-              {tab.label}
+              {t(tab.i18nKey)}
             </button>
           ))}
         </div>
@@ -150,10 +152,10 @@ export default function ExplorePage() {
               </svg>
             </div>
             <p className="mt-3 text-sm font-medium text-gray-500">
-              Nenhuma pessoa encontrada
+              {t("explore.noResults")}
             </p>
             <p className="mt-1 text-xs text-gray-500">
-              Tente ajustar os filtros ou a busca
+              {t("explore.adjustFilters")}
             </p>
           </div>
         ) : (

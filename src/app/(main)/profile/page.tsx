@@ -7,6 +7,7 @@ import Link from "next/link";
 import { resizeImage, MIN_MESSAGE_COST, MAX_MESSAGE_COST } from "@/lib/utils";
 import { CoinIcon } from "@/components/ui/CoinIcon";
 import { uploadFile } from "@/lib/uploadFile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserProfile {
   id: string;
@@ -45,6 +46,7 @@ interface FollowUser {
 }
 
 export default function MyProfilePage() {
+  const { t } = useLanguage();
   const { data: session, status } = useSession();
   const router = useRouter();
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -117,12 +119,12 @@ export default function MyProfilePage() {
     if (!file || !myId) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Selecione uma imagem (JPG, PNG, WebP).");
+      alert(t("profile.selectImage"));
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("Imagem muito grande. Maximo 10MB.");
+      alert(t("profile.imageTooLarge"));
       return;
     }
 
@@ -147,7 +149,7 @@ export default function MyProfilePage() {
         setProfile((prev) => (prev ? { ...prev, avatar: url } : prev));
       }
     } catch {
-      alert("Erro ao atualizar foto. Tente novamente.");
+      alert(t("profile.errorUpdatePhoto"));
     } finally {
       setUploadingAvatar(false);
       if (avatarInputRef.current) avatarInputRef.current.value = "";
@@ -235,7 +237,7 @@ export default function MyProfilePage() {
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
-        <p className="text-gray-500">Perfil nao encontrado.</p>
+        <p className="text-gray-500">{t("profile.notFound")}</p>
       </div>
     );
   }
@@ -246,7 +248,7 @@ export default function MyProfilePage() {
     <div className="bg-white min-h-screen">
       {/* Header */}
       <div className="bg-gradient-to-br from-purple-400 to-purple-600 pt-12 pb-16 px-6 text-center relative">
-        <h1 className="text-lg font-bold text-white">Meu Perfil</h1>
+        <h1 className="text-lg font-bold text-white">{t("profile.title")}</h1>
       </div>
 
       {/* Avatar */}
@@ -299,7 +301,7 @@ export default function MyProfilePage() {
           )}
           {profile.role === "CREATOR" && (
             <span className="bg-purple-500/20 text-purple-400 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-              Criadora
+              {t("common.creator")}
             </span>
           )}
         </div>
@@ -314,7 +316,7 @@ export default function MyProfilePage() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Verificar perfil
+            {t("profile.verifyProfile")}
           </Link>
         )}
       </div>
@@ -323,22 +325,22 @@ export default function MyProfilePage() {
       <div className="flex justify-center gap-6 mt-6 px-6">
         <div className="text-center">
           <p className="text-2xl font-bold text-gray-900">{profile._count.videos}</p>
-          <p className="text-xs text-gray-400 mt-0.5">Videos</p>
+          <p className="text-xs text-gray-400 mt-0.5">{t("common.videos")}</p>
         </div>
         <div className="w-px bg-gray-200" />
         <button onClick={() => openFollowModal("followers")} className="text-center">
           <p className="text-2xl font-bold text-gray-900">{followersCount}</p>
-          <p className="text-xs text-gray-400 mt-0.5">Seguidores</p>
+          <p className="text-xs text-gray-400 mt-0.5">{t("common.followers")}</p>
         </button>
         <div className="w-px bg-gray-200" />
         <button onClick={() => openFollowModal("following")} className="text-center">
           <p className="text-2xl font-bold text-gray-900">{followingCount}</p>
-          <p className="text-xs text-gray-400 mt-0.5">Seguindo</p>
+          <p className="text-xs text-gray-400 mt-0.5">{t("common.following")}</p>
         </button>
         <div className="w-px bg-gray-200" />
         <div className="text-center">
           <p className="text-2xl font-bold text-purple-500">{profile.coins.toLocaleString("pt-BR")}</p>
-          <p className="text-xs text-gray-400 mt-0.5">Moedas</p>
+          <p className="text-xs text-gray-400 mt-0.5">{t("common.coins")}</p>
         </div>
       </div>
 
@@ -348,13 +350,13 @@ export default function MyProfilePage() {
           onClick={() => setShowEdit(true)}
           className="flex-1 py-2.5 border-2 border-purple-500 text-purple-500 font-semibold rounded-xl hover:bg-purple-500/10 transition"
         >
-          Editar Perfil
+          {t("profile.editProfile")}
         </button>
         <Link
           href="/gallery"
           className="flex-1 py-2.5 bg-purple-500 text-white font-semibold rounded-xl hover:bg-purple-600 transition text-center"
         >
-          Minha Galeria
+          {t("profile.myGallery")}
         </Link>
         <button
           onClick={handleShareProfile}
@@ -380,14 +382,14 @@ export default function MyProfilePage() {
           className="relative overflow-hidden rounded-2xl bg-white border border-gray-200 p-4 hover:border-purple-300 transition"
         >
           <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full opacity-10 blur-xl" />
-          <p className="text-xs text-gray-400 font-medium">Carteira</p>
+          <p className="text-xs text-gray-400 font-medium">{t("profile.wallet")}</p>
           <div className="flex items-center gap-2 mt-1">
             <CoinIcon size="sm" />
             <p className="text-xl font-bold text-gray-900">{profile.coins.toLocaleString("pt-BR")}</p>
           </div>
           <div className="mt-3">
             <span className="text-xs font-semibold text-purple-500 bg-purple-50 px-3 py-1 rounded-full">
-              Comprar
+              {t("profile.buy")}
             </span>
           </div>
         </Link>
@@ -399,7 +401,7 @@ export default function MyProfilePage() {
         >
           <div className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full opacity-10 blur-xl" />
           <p className="text-xs text-gray-400 font-medium">
-            {profile.verified ? "Saque" : "Verificacao"}
+            {profile.verified ? t("profile.withdrawal") : t("profile.verification")}
           </p>
           {profile.verified ? (
             <>
@@ -425,7 +427,7 @@ export default function MyProfilePage() {
               </div>
               <div className="mt-3">
                 <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                  Verificar perfil
+                  {t("profile.verifyProfile")}
                 </span>
               </div>
             </>
@@ -440,7 +442,7 @@ export default function MyProfilePage() {
             href="/admin"
             className="block w-full py-2.5 bg-gray-100 text-gray-900 font-semibold rounded-xl hover:bg-gray-200 transition text-center text-sm"
           >
-            Painel Admin
+            {t("profile.adminPanel")}
           </Link>
         </div>
       )}
@@ -451,14 +453,14 @@ export default function MyProfilePage() {
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="block w-full py-2.5 border-2 border-red-500/50 text-red-400 font-semibold rounded-xl hover:bg-red-500/10 transition text-center text-sm"
         >
-          Sair da conta
+          {t("profile.signOut")}
         </button>
       </div>
 
       {/* Videos Grid */}
       <div className="px-4 mt-8 pb-24">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4 px-2">
-          Meus Videos
+          {t("profile.myVideos")}
         </h3>
         {videos.length === 0 ? (
           <div className="text-center py-12">
@@ -467,8 +469,8 @@ export default function MyProfilePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
             </div>
-            <p className="text-gray-500 text-sm">Nenhum video ainda</p>
-            <p className="text-gray-400 text-xs mt-1">Seus videos aparecerao aqui</p>
+            <p className="text-gray-500 text-sm">{t("profile.noVideos")}</p>
+            <p className="text-gray-400 text-xs mt-1">{t("profile.videosAppearHere")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-1">
@@ -558,7 +560,7 @@ export default function MyProfilePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl border border-gray-200">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-gray-900">Editar Perfil</h3>
+              <h3 className="text-lg font-bold text-gray-900">{t("profile.editProfile")}</h3>
               <button
                 onClick={() => setShowEdit(false)}
                 className="text-gray-400 hover:text-gray-600 transition"
@@ -572,26 +574,26 @@ export default function MyProfilePage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Nome
+                  {t("profile.name")}
                 </label>
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400"
-                  placeholder="Seu nome"
+                  placeholder={t("profile.yourName")}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Bio
+                  {t("profile.bio")}
                 </label>
                 <textarea
                   value={editBio}
                   onChange={(e) => setEditBio(e.target.value)}
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition text-gray-900 placeholder-gray-400 resize-none"
-                  placeholder="Conte um pouco sobre voce..."
+                  placeholder={t("profile.aboutYou")}
                 />
               </div>
             </div>
@@ -599,7 +601,7 @@ export default function MyProfilePage() {
             {profile.verified && (
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Preco da Mensagem (moedas)
+                  {t("profile.messageCost")}
                 </label>
                 <div className="flex items-center gap-2">
                   <CoinIcon size="sm" />
@@ -613,7 +615,7 @@ export default function MyProfilePage() {
                   />
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  Valor que outros pagam pra te enviar mensagem ({MIN_MESSAGE_COST}-{MAX_MESSAGE_COST})
+                  {t("profile.messageCostDesc")} ({MIN_MESSAGE_COST}-{MAX_MESSAGE_COST})
                 </p>
               </div>
             )}
@@ -623,14 +625,14 @@ export default function MyProfilePage() {
                 onClick={() => setShowEdit(false)}
                 className="flex-1 py-2.5 border border-gray-300 text-gray-600 font-semibold rounded-xl hover:bg-gray-100 transition"
               >
-                Cancelar
+                {t("common.cancel")}
               </button>
               <button
                 onClick={handleSaveProfile}
                 disabled={saving}
                 className="flex-1 py-2.5 bg-purple-500 text-white font-semibold rounded-xl hover:bg-purple-600 transition disabled:opacity-50"
               >
-                {saving ? "Salvando..." : "Salvar"}
+                {saving ? t("common.saving") : t("common.save")}
               </button>
             </div>
           </div>
@@ -643,7 +645,7 @@ export default function MyProfilePage() {
           <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md shadow-xl max-h-[70vh] flex flex-col border border-gray-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-900">
-                {showFollowModal === "followers" ? "Seguidores" : "Seguindo"}
+                {showFollowModal === "followers" ? t("common.followers") : t("common.following")}
               </h3>
               <button
                 onClick={() => setShowFollowModal(null)}
@@ -663,7 +665,7 @@ export default function MyProfilePage() {
               ) : followList.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-400 text-sm">
-                    {showFollowModal === "followers" ? "Nenhum seguidor ainda" : "Nao esta seguindo ninguem"}
+                    {showFollowModal === "followers" ? t("profile.noFollowers") : t("profile.notFollowing")}
                   </p>
                 </div>
               ) : (

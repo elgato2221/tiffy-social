@@ -8,6 +8,7 @@ import ChatBubble from "@/components/ChatBubble";
 import GiftModal from "@/components/GiftModal";
 import { CoinIcon } from "@/components/ui/CoinIcon";
 import { uploadFile } from "@/lib/uploadFile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MessageUser {
   id: string;
@@ -55,6 +56,7 @@ const EMOJIS = [
 ];
 
 export default function ChatPage() {
+  const { t } = useLanguage();
   const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams();
@@ -294,7 +296,7 @@ export default function ChatPage() {
         });
       }, 1000);
     } catch {
-      alert("Nao foi possivel acessar o microfone.");
+      alert(t("chat.cantAccessMic"));
     }
   }
 
@@ -416,11 +418,11 @@ export default function ChatPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-      alert("Selecione uma imagem ou video.");
+      alert(t("chat.selectImageVideo"));
       return;
     }
     if (file.size > 100 * 1024 * 1024) {
-      alert("Arquivo muito grande. Maximo 100MB.");
+      alert(t("chat.fileTooLarge"));
       return;
     }
     setMediaFile(file);
@@ -453,7 +455,7 @@ export default function ChatPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           receiverId: otherUserId,
-          content: "Midia bloqueada",
+          content: t("messages.lockedMedia"),
           type: "locked_media",
           mediaUrl: url,
           mediaType: isVideo ? "video" : "photo",
@@ -550,12 +552,12 @@ export default function ChatPage() {
           className="flex-1 min-w-0 text-left"
         >
           <h2 className="text-sm font-semibold text-gray-900 truncate">
-            {otherUser?.name || "Usuario"}
+            {otherUser?.name || t("chat.user")}
           </h2>
           {otherUser?.online ? (
-            <p className="text-[11px] text-purple-500">Online</p>
+            <p className="text-[11px] text-purple-500">{t("common.online")}</p>
           ) : (
-            <p className="text-[11px] text-gray-500">Offline</p>
+            <p className="text-[11px] text-gray-500">{t("common.offline")}</p>
           )}
         </button>
 
@@ -563,7 +565,7 @@ export default function ChatPage() {
         <button
           onClick={() => setShowGiftModal(true)}
           className="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 hover:text-purple-500 hover:bg-purple-50 transition flex-shrink-0"
-          title="Enviar presente"
+          title={t("chat.sendGift")}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
@@ -579,7 +581,7 @@ export default function ChatPage() {
             {messages.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-sm">
-                  Nenhuma mensagem ainda. Diga ola!
+                  {t("chat.noMessages")}
                 </p>
               </div>
             ) : (
@@ -660,7 +662,7 @@ export default function ChatPage() {
             </div>
             {audioCost > 0 && (
               <p className="text-xs text-purple-600 mt-2 text-center">
-                Enviar audio custa {audioCost} moedas
+                {t("chat.sendAudioCost")} {audioCost} {t("common.coins")}
               </p>
             )}
           </div>
@@ -670,7 +672,7 @@ export default function ChatPage() {
       {/* Gift Modal */}
       <GiftModal
         receiverId={otherUserId}
-        receiverName={otherUser?.name || "Usuario"}
+        receiverName={otherUser?.name || t("chat.user")}
         isOpen={showGiftModal}
         onClose={() => setShowGiftModal(false)}
       />
@@ -683,14 +685,14 @@ export default function ChatPage() {
             <div className="flex items-center gap-1 mb-2 px-1">
               <CoinIcon size="xs" />
               <span className="text-xs text-purple-600 font-medium">
-                Texto: {messageCost} moedas | Audio: {audioCost} moedas
+                {t("chat.textCost")}: {messageCost} {t("common.coins")} | {t("chat.audioCost")}: {audioCost} {t("common.coins")}
               </span>
             </div>
           )}
           {messageCost === 0 && !recording && !audioBlob && (
             <div className="flex items-center gap-1 mb-2 px-1">
               <span className="text-xs text-purple-400 font-medium">
-                Respostas gratuitas
+                {t("chat.freeReplies")}
               </span>
             </div>
           )}
@@ -707,7 +709,7 @@ export default function ChatPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 mb-2">Preco para desbloquear:</p>
+                  <p className="text-xs text-gray-500 mb-2">{t("chat.priceToUnlock")}</p>
                   <div className="flex items-center gap-2">
                     <CoinIcon size="sm" />
                     <input
@@ -718,7 +720,7 @@ export default function ChatPage() {
                       max="10000"
                       className="w-24 px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
-                    <span className="text-xs text-gray-500">moedas</span>
+                    <span className="text-xs text-gray-500">{t("common.coins")}</span>
                   </div>
                 </div>
                 <button onClick={cancelMedia} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
@@ -739,7 +741,7 @@ export default function ChatPage() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                     </svg>
-                    Enviar midia bloqueada
+                    {t("chat.sendLockedMedia")}
                   </>
                 )}
               </button>
@@ -823,7 +825,7 @@ export default function ChatPage() {
                 type="text"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Mensagem..."
+                placeholder={t("chat.messagePlaceholder")}
                 className="flex-1 min-w-0 px-4 py-2 bg-gray-100 border border-gray-300 rounded-full focus:outline-none focus:border-gray-400 text-sm text-gray-900 placeholder-gray-400"
                 onFocus={() => setShowEmojis(false)}
               />

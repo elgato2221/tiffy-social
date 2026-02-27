@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ForgotPasswordPage() {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -44,15 +46,15 @@ export default function ForgotPasswordPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Email enviado!</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t("auth.emailSent")}</h2>
             <p className="text-gray-500 text-sm mb-6">
-              Se existe uma conta com o email <strong className="text-gray-900">{email}</strong>, voce recebera um link para redefinir sua senha.
+              {t("auth.emailSentDesc")} <strong className="text-gray-900">{email}</strong>, {t("auth.emailSentDesc2")}
             </p>
             <Link
               href="/login"
               className="text-purple-500 hover:text-purple-400 font-semibold text-sm transition"
             >
-              Voltar para o login
+              {t("auth.backToLogin")}
             </Link>
           </div>
         </div>
@@ -65,19 +67,19 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-            Tiffy Social
+            {t("auth.appName")}
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            Recuperar sua senha
+            {t("auth.recoverPassword")}
           </p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
-            Esqueceu a senha?
+            {t("auth.forgotTitle")}
           </h2>
           <p className="text-gray-500 text-sm text-center mb-6">
-            Digite seu email e enviaremos um link para redefinir sua senha.
+            {t("auth.forgotDesc")}
           </p>
 
           {error && (
@@ -92,7 +94,7 @@ export default function ForgotPasswordPage() {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-600 mb-1"
               >
-                Email
+                {t("auth.email")}
               </label>
               <input
                 id="email"
@@ -110,7 +112,7 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 rounded-xl transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Enviando..." : "Enviar link de recuperacao"}
+              {loading ? t("common.sending") : t("auth.sendRecovery")}
             </button>
           </form>
 
@@ -119,7 +121,7 @@ export default function ForgotPasswordPage() {
               href="/login"
               className="text-sm text-gray-500 hover:text-gray-900 transition"
             >
-              Voltar para o login
+              {t("auth.backToLogin")}
             </Link>
           </div>
         </div>

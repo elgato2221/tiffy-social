@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function LoginPage() {
   return (
@@ -20,6 +21,7 @@ export default function LoginPage() {
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"choice" | "login">("choice");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -109,10 +111,10 @@ function LoginContent() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-              Tiffy Social
+              {t("auth.appName")}
             </h1>
             <p className="text-gray-500 mt-2 text-sm">
-              Uma rede social para solteiros que monetiza usuarios
+              {t("auth.tagline")}
             </p>
           </div>
 
@@ -136,9 +138,9 @@ function LoginContent() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Perfil Anonimo</h3>
+                  <h3 className="text-lg font-bold text-gray-900">{t("auth.anonymous")}</h3>
                   <p className="text-sm text-gray-500 mt-0.5">
-                    Navegue, curta e comente sem revelar sua identidade
+                    {t("auth.anonymousDesc")}
                   </p>
                 </div>
               </div>
@@ -156,9 +158,9 @@ function LoginContent() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Criar Conta Publica</h3>
+                  <h3 className="text-lg font-bold text-gray-900">{t("auth.createPublic")}</h3>
                   <p className="text-sm text-gray-500 mt-0.5">
-                    Crie seu perfil, publique e monetize
+                    {t("auth.createPublicDesc")}
                   </p>
                 </div>
               </div>
@@ -171,7 +173,7 @@ function LoginContent() {
               onClick={() => setMode("login")}
               className="text-sm text-gray-500 hover:text-purple-400 transition"
             >
-              Ja tem uma conta? <span className="font-semibold text-purple-500">Entrar</span>
+              {t("auth.hasAccount")} <span className="font-semibold text-purple-500">{t("auth.signIn")}</span>
             </button>
           </div>
         </div>
@@ -185,16 +187,16 @@ function LoginContent() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-            Tiffy Social
+            {t("auth.appName")}
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            Bem-vindo de volta
+            {t("auth.welcomeBack")}
           </p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-6">
-            Entrar
+            {t("auth.signIn")}
           </h2>
 
           {success && (
@@ -212,7 +214,7 @@ function LoginContent() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-1">
-                Email
+                {t("auth.email")}
               </label>
               <input
                 id="email"
@@ -227,7 +229,7 @@ function LoginContent() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-1">
-                Senha
+                {t("auth.password")}
               </label>
               <input
                 id="password"
@@ -245,7 +247,7 @@ function LoginContent() {
               disabled={loading}
               className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 rounded-xl transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? t("auth.signingIn") : t("auth.signIn")}
             </button>
           </form>
 
@@ -254,7 +256,7 @@ function LoginContent() {
               href="/forgot-password"
               className="text-sm text-gray-500 hover:text-purple-400 transition"
             >
-              Esqueceu a senha?
+              {t("auth.forgotPassword")}
             </Link>
           </div>
 
@@ -263,7 +265,7 @@ function LoginContent() {
               onClick={() => setMode("choice")}
               className="text-sm text-gray-500 hover:text-gray-900 transition"
             >
-              Voltar
+              {t("common.back")}
             </button>
           </div>
         </div>

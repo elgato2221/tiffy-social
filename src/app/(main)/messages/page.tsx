@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { timeAgo } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ConversationUser {
   id: string;
@@ -35,6 +36,7 @@ interface SuggestedUser {
 }
 
 export default function MessagesPage() {
+  const { t } = useLanguage();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -109,14 +111,14 @@ export default function MessagesPage() {
     <div className="bg-white min-h-screen pb-20">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-900">Mensagens</h1>
+        <h1 className="text-xl font-bold text-gray-900">{t("messages.title")}</h1>
       </div>
 
       {/* Suggestions Carousel */}
       {suggestedUsers.length > 0 && (
         <div className="border-b border-gray-200">
           <div className="px-6 pt-4 pb-1">
-            <p className="text-sm font-semibold text-gray-900">Sugestoes</p>
+            <p className="text-sm font-semibold text-gray-900">{t("messages.suggestions")}</p>
           </div>
           <div className="overflow-x-auto flex gap-3 px-6 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {suggestedUsers.map((user) => {
@@ -167,7 +169,7 @@ export default function MessagesPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Pesquisar"
+            placeholder={t("messages.search")}
             className="w-full bg-gray-100 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 transition-all"
           />
         </div>
@@ -181,8 +183,8 @@ export default function MessagesPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
             </svg>
           </div>
-          <p className="text-gray-600 font-medium">Nenhuma conversa ainda</p>
-          <p className="text-gray-400 text-sm mt-1">Suas conversas aparecerao aqui</p>
+          <p className="text-gray-600 font-medium">{t("messages.noConversations")}</p>
+          <p className="text-gray-400 text-sm mt-1">{t("messages.conversationsHere")}</p>
         </div>
       ) : (
         <div className="divide-y divide-gray-200">
@@ -190,11 +192,11 @@ export default function MessagesPage() {
             const initial = conv.user.name?.charAt(0)?.toUpperCase() || "?";
             const msgType = conv.lastMessage.type;
             const preview = msgType === "audio"
-              ? "🎤 Audio"
+              ? `🎤 ${t("messages.audio")}`
               : msgType === "gift"
-                ? "🎁 Presente"
+                ? `🎁 ${t("messages.gift")}`
                 : msgType === "locked_media"
-                  ? "🔒 Midia bloqueada"
+                  ? `🔒 ${t("messages.lockedMedia")}`
                   : conv.lastMessage.content.length > 45
                     ? conv.lastMessage.content.slice(0, 45) + "..."
                     : conv.lastMessage.content;

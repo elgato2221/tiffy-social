@@ -5,6 +5,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { timeAgo } from "@/lib/utils";
 import WalletBalance from "@/components/WalletBalance";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Transaction {
   id: string;
@@ -86,36 +87,36 @@ function getTransactionIcon(type: string): string {
   }
 }
 
-function getTransactionLabel(type: string): string {
+function getTransactionLabel(type: string, t: (key: string) => string): string {
   switch (type) {
     case "PURCHASE":
-      return "Compra de moedas";
+      return t("wallet.txPurchase");
     case "MESSAGE_SENT":
-      return "Mensagem enviada";
+      return t("wallet.txMessageSent");
     case "MESSAGE_RECEIVED":
-      return "Mensagem recebida";
+      return t("wallet.txMessageReceived");
     case "GIFT_SENT":
-      return "Presente enviado";
+      return t("wallet.txGiftSent");
     case "GIFT_RECEIVED":
-      return "Presente recebido";
+      return t("wallet.txGiftReceived");
     case "COMMENT_SENT":
-      return "Comentario enviado";
+      return t("wallet.txCommentSent");
     case "COMMENT_RECEIVED":
-      return "Comentario recebido";
+      return t("wallet.txCommentReceived");
     case "WITHDRAWAL":
-      return "Saque solicitado";
+      return t("wallet.txWithdrawal");
     case "DAILY_REWARD":
-      return "Recompensa diaria";
+      return t("wallet.txDailyReward");
     case "GALLERY_UNLOCK":
-      return "Galeria desbloqueada";
+      return t("wallet.txGalleryUnlock");
     case "GALLERY_EARNING":
-      return "Ganho de galeria";
+      return t("wallet.txGalleryEarn");
     case "MEDIA_UNLOCK":
-      return "Midia desbloqueada";
+      return t("wallet.txMediaUnlock");
     case "MEDIA_EARNING":
-      return "Ganho de midia";
+      return t("wallet.txMediaEarn");
     default:
-      return "Transacao";
+      return t("wallet.txDefault");
   }
 }
 
@@ -163,6 +164,7 @@ export default function WalletPageWrapper() {
 }
 
 function WalletPage() {
+  const { t } = useLanguage();
   const { data: session, status } = useSession();
   const router = useRouter();
   const [wallet, setWallet] = useState<WalletData | null>(null);
@@ -391,7 +393,7 @@ function WalletPage() {
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center">
             <span className="text-xs font-extrabold text-amber-900">T</span>
           </div>
-          <h1 className="text-xl font-bold text-gray-900">Carteira</h1>
+          <h1 className="text-xl font-bold text-gray-900">{t("wallet.title")}</h1>
         </div>
       </div>
 
@@ -404,7 +406,7 @@ function WalletPage() {
       <div className="px-6 -mt-2 mb-6 grid grid-cols-2 gap-3">
         <div className="relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-200 p-4">
           <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-full blur-2xl" />
-          <p className="text-xs text-gray-400 font-medium">Total Recebido</p>
+          <p className="text-xs text-gray-400 font-medium">{t("wallet.totalReceived")}</p>
           <p className="text-lg font-bold text-purple-400 mt-0.5">
             +{totalEarned.toLocaleString("pt-BR")}
           </p>
@@ -412,7 +414,7 @@ function WalletPage() {
         </div>
         <div className="relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-200 p-4">
           <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-full blur-2xl" />
-          <p className="text-xs text-gray-400 font-medium">Total Gasto</p>
+          <p className="text-xs text-gray-400 font-medium">{t("wallet.totalSpent")}</p>
           <p className="text-lg font-bold text-red-400 mt-0.5">
             -{totalSpent.toLocaleString("pt-BR")}
           </p>
@@ -429,15 +431,15 @@ function WalletPage() {
               <span className="text-xl">💰</span>
             </div>
             <div>
-              <p className="text-xs text-purple-500 font-medium uppercase tracking-wider">Seus Ganhos</p>
+              <p className="text-xs text-purple-500 font-medium uppercase tracking-wider">{t("wallet.earnings")}</p>
               <p className="text-2xl font-bold text-purple-600">
-                {earnings.toLocaleString("pt-BR")} <span className="text-sm font-medium text-purple-400">moedas</span>
+                {earnings.toLocaleString("pt-BR")} <span className="text-sm font-medium text-purple-400">{t("common.coins")}</span>
               </p>
               <p className="text-xs text-purple-400/70">≈ R$ {coinsToReais(earnings)}</p>
             </div>
           </div>
           <p className="text-xs text-purple-400 mt-3">
-            Total ganho com mensagens, presentes e comentarios
+            {t("wallet.earningsDesc")}
           </p>
         </div>
       )}
@@ -445,7 +447,7 @@ function WalletPage() {
       {/* Buy Coins */}
       <div className="px-6 mb-8">
         <div className="flex items-center gap-2 mb-5">
-          <h2 className="text-lg font-bold text-gray-900">Comprar Moedas</h2>
+          <h2 className="text-lg font-bold text-gray-900">{t("wallet.buyCoins")}</h2>
         </div>
 
         {/* Payment success message */}
@@ -454,7 +456,7 @@ function WalletPage() {
             <div className="flex items-center gap-2">
               <span className="text-lg">✅</span>
               <p className="text-sm text-purple-600 font-medium">
-                Pagamento enviado! Suas moedas serao creditadas assim que o pagamento for confirmado.
+                {t("wallet.paymentSent")}
               </p>
             </div>
           </div>
@@ -478,7 +480,7 @@ function WalletPage() {
                 <path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z" />
               </svg>
             </div>
-            <span className="relative">Crypto</span>
+            <span className="relative">{t("wallet.crypto")}</span>
           </button>
           <button
             onClick={() => setPaymentMethod("card")}
@@ -496,20 +498,20 @@ function WalletPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
-            <span className="relative">Cartao / PIX</span>
+            <span className="relative">{t("wallet.cardPix")}</span>
           </button>
         </div>
 
         {paymentMethod === "crypto" ? (
           <div className="mb-5 p-3.5 bg-purple-50 border border-purple-200 rounded-2xl">
             <p className="text-xs text-purple-600">
-              Pague com BTC, ETH, USDT, SOL e 300+ criptomoedas. Processado por NOWPayments.
+              {t("wallet.cryptoDesc")}
             </p>
           </div>
         ) : (
           <div className="mb-5 p-3.5 bg-blue-50 border border-blue-200 rounded-2xl">
             <p className="text-xs text-blue-600">
-              Pague com cartao de credito, debito ou PIX. Processado por Mercado Pago.
+              {t("wallet.cardDesc")}
             </p>
           </div>
         )}
@@ -539,10 +541,10 @@ function WalletPage() {
               <p className="font-bold text-gray-900 text-sm">
                 {pkg.amount.toLocaleString("pt-BR")}
               </p>
-              <p className="text-xs text-gray-500 mb-1">moedas</p>
+              <p className="text-xs text-gray-500 mb-1">{t("common.coins")}</p>
               {pkg.popular && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 font-bold uppercase tracking-wider mb-1">
-                  Mais popular
+                  {t("wallet.mostPopular")}
                 </span>
               )}
               {pkg.savings && (
@@ -565,20 +567,20 @@ function WalletPage() {
       {withdrawData?.verified ? (
         <div className="px-6 mb-8">
           <div className="flex items-center gap-2 mb-5">
-            <h2 className="text-lg font-bold text-gray-900">Solicitar Saque</h2>
+            <h2 className="text-lg font-bold text-gray-900">{t("wallet.requestWithdrawal")}</h2>
           </div>
 
           {/* Withdrawal balance info */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-200 p-4">
-              <p className="text-xs text-gray-400 font-medium">Disponivel para saque</p>
+              <p className="text-xs text-gray-400 font-medium">{t("wallet.availableForWithdrawal")}</p>
               <p className="text-lg font-bold text-green-400 mt-0.5">
                 {(withdrawData.availableForWithdrawal || 0).toLocaleString("pt-BR")}
               </p>
               <p className="text-[11px] text-gray-400">≈ R$ {coinsToReais(withdrawData.availableForWithdrawal || 0)}</p>
             </div>
             <div className="relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-200 p-4">
-              <p className="text-xs text-gray-400 font-medium">Em retencao</p>
+              <p className="text-xs text-gray-400 font-medium">{t("wallet.onHold")}</p>
               <p className="text-lg font-bold text-amber-400 mt-0.5">
                 {(withdrawData.heldCoins || 0).toLocaleString("pt-BR")}
               </p>
@@ -589,7 +591,7 @@ function WalletPage() {
           {withdrawData.heldCoins > 0 && (
             <div className="mb-4 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl">
               <p className="text-xs text-amber-600">
-                Moedas em retencao ficam disponiveis para saque apos 30 dias. Somente moedas ganhas podem ser sacadas.
+                {t("wallet.holdDesc")}
               </p>
             </div>
           )}
@@ -614,7 +616,7 @@ function WalletPage() {
               {/* Withdraw method selector */}
               <div>
                 <label className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-2 block">
-                  Metodo de saque
+                  {t("wallet.withdrawMethod")}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -652,7 +654,7 @@ function WalletPage() {
               {withdrawMethod === "PIX" ? (
                 <div>
                   <label className="text-xs text-gray-500 font-medium uppercase tracking-wider">
-                    Chave Pix
+                    {t("wallet.pixKey")}
                   </label>
                   <input
                     type="text"
@@ -665,7 +667,7 @@ function WalletPage() {
               ) : (
                 <div>
                   <label className="text-xs text-gray-500 font-medium uppercase tracking-wider">
-                    Email do PayPal
+                    {t("wallet.paypalEmail")}
                   </label>
                   <input
                     type="email"
@@ -698,20 +700,20 @@ function WalletPage() {
                 {withdrawing ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
                 ) : (
-                  "Solicitar Saque"
+                  t("wallet.requestWithdrawal")
                 )}
               </button>
             </form>
 
             {withdrawData.withdrawals.length > 0 && (
               <div className="relative mt-5 pt-5 border-t border-gray-200">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Seus saques</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">{t("wallet.yourWithdrawals")}</p>
                 <div className="space-y-2.5">
                   {withdrawData.withdrawals.map((w) => (
                     <div key={w.id} className="flex items-center justify-between text-sm p-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors">
                       <div>
                         <span className="font-medium text-gray-600">
-                          {w.amount.toLocaleString("pt-BR")} moedas
+                          {w.amount.toLocaleString("pt-BR")} {t("common.coins")}
                         </span>
                         <span className="text-[10px] text-gray-400 ml-1">
                           (≈ R$ {coinsToReais(w.amount)})
@@ -735,10 +737,10 @@ function WalletPage() {
                         }`}
                       >
                         {w.status === "PENDING"
-                          ? "Pendente"
+                          ? t("wallet.pending")
                           : w.status === "APPROVED"
-                          ? "Aprovado"
-                          : "Recusado"}
+                          ? t("wallet.approved")
+                          : t("wallet.rejected")}
                       </span>
                     </div>
                   ))}
@@ -758,16 +760,16 @@ function WalletPage() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-900">Verifique seu perfil para sacar</p>
+                <p className="text-sm font-bold text-gray-900">{t("wallet.verifyToWithdraw")}</p>
                 <p className="text-xs text-gray-500 mt-1">
-                  A verificacao e necessaria para solicitar saques. Somente moedas ganhas podem ser sacadas.
+                  {t("wallet.verifyRequiredDesc")}
                 </p>
               </div>
               <button
                 onClick={() => router.push("/verify")}
                 className="mt-2 px-6 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-semibold rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98]"
               >
-                Verificar Perfil
+                {t("wallet.verifyProfile")}
               </button>
             </div>
           </div>
@@ -777,13 +779,13 @@ function WalletPage() {
       {/* Transaction History */}
       <div className="px-6 pb-24">
         <div className="flex items-center gap-2 mb-5">
-          <h2 className="text-lg font-bold text-gray-900">Historico de Transacoes</h2>
+          <h2 className="text-lg font-bold text-gray-900">{t("wallet.transactionHistory")}</h2>
         </div>
 
         {(!wallet?.transactions || wallet.transactions.length === 0) ? (
           <div className="text-center py-12 rounded-2xl bg-gray-50 border border-gray-200">
             <span className="text-3xl mb-3 block">📭</span>
-            <p className="text-gray-400 text-sm">Nenhuma transacao ainda</p>
+            <p className="text-gray-400 text-sm">{t("wallet.noTransactions")}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -797,7 +799,7 @@ function WalletPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {getTransactionLabel(tx.type)}
+                    {getTransactionLabel(tx.type, t)}
                   </p>
                   <p className="text-xs text-gray-400">
                     {timeAgo(tx.createdAt)}

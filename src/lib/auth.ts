@@ -47,6 +47,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           gender: user.gender,
           username: user.username,
+          language: user.language || "pt",
         };
       },
     }),
@@ -58,6 +59,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.gender = user.gender;
         token.username = user.username;
+        token.language = user.language;
       }
       return token;
     },
@@ -67,6 +69,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
         session.user.gender = token.gender;
         session.user.username = token.username;
+        session.user.language = token.language;
       }
       return session;
     },
